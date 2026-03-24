@@ -1,14 +1,14 @@
 
 import './App.css'
-import Page from './app/dashboard/page'
+import RouteMain from './routes/routeMain'
+import { BrowserRouter } from 'react-router'
 function App() {
 
   return (
     <>
-      <div className='dark '>
-
-      <Page />      </div>
-
+      <BrowserRouter>
+        <RouteMain />
+      </BrowserRouter>
     </>
   )
 }

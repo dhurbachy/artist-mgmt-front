@@ -1,0 +1,39 @@
+import { Suspense } from "react";
+import { Route, Routes } from "react-router";
+import ProtectedRoute from "./ProtectedRoute";
+import AppLayout from "../app/layouts/layout";
+import { appRoutes, authRoutes } from "./routes";
+// import NotFound from "@/components/NotFound";
+// import Guard from "@/components/Guard";
+export default function RouteMain() {
+    return (
+        <>
+
+            <Suspense fallback={
+                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+                    loading...
+                </div>
+            }>
+                <Routes>
+                    <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+                        {appRoutes.map((route) => (
+                            <Route
+                                key={route.path}
+                                path={route.path.replace("/", "")}
+                                element={route.element}
+                            />
+                        ))}
+                    </Route>
+
+                    {authRoutes.map((route) => (
+                        <Route key={route.path} path={route.path} element={route.element} />
+                    ))}
+
+                    {/* Catch-all 404 */}
+                    {/* <Route path="*" element={<Dashboard />} /> */}
+                </Routes>
+            </Suspense>
+
+        </>
+    )
+};
