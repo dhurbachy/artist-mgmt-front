@@ -1,3 +1,4 @@
+import Forbidden from "@/utils/forbidden";
 export default function ProtectedRoute({
   children,
 }: {
@@ -7,18 +8,20 @@ export default function ProtectedRoute({
   if (!isAuthenticated) {
     // authService.signinRedirect();
 
-    return (
-      <div
-        style={{
-          height: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-      </div>
-    );
+    // return (
+    //   <div
+    //     style={{
+    //       height: "100vh",
+    //       display: "flex",
+    //       justifyContent: "center",
+    //       alignItems: "center",
+    //     }}
+    //   >
+    //   </div>
+    // );
+    return <Forbidden />
   }
+
 
   return <>{children}</>;
 }

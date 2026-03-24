@@ -5,6 +5,7 @@ export const ROUTES = {
     REGISTER: '/register',
     ARTISTS:'/artists',
     USERS:'/users',
-    SONGS:'/songs'
+    SONGS:'/songs',
+    NOTFOUND:'/not-found'
 
 }

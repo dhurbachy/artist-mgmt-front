@@ -3,7 +3,8 @@ import { Route, Routes } from "react-router";
 import ProtectedRoute from "./ProtectedRoute";
 import AppLayout from "../app/layouts/layout";
 import { appRoutes, authRoutes } from "./routes";
-// import NotFound from "@/components/NotFound";
+import NotFound from "@/utils/notFound";
+import Forbidden from "@/utils/forbidden";
 // import Guard from "@/components/Guard";
 export default function RouteMain() {
     return (
@@ -23,6 +24,7 @@ export default function RouteMain() {
                                 element={route.element}
                             />
                         ))}
+                        <Route path="*" element={<NotFound />} />
                     </Route>
 
                     {authRoutes.map((route) => (
@@ -30,7 +32,7 @@ export default function RouteMain() {
                     ))}
 
                     {/* Catch-all 404 */}
-                    {/* <Route path="*" element={<Dashboard />} /> */}
+                    <Route path="*" element={<Forbidden />} />
                 </Routes>
             </Suspense>
 
