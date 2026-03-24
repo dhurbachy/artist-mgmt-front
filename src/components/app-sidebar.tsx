@@ -1,8 +1,6 @@
 import * as React from "react"
 
-import { NavDocuments } from "@/components/nav-documents"
 import { NavMain } from "@/components/nav-main"
-import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
 import {
   Sidebar,
@@ -13,8 +11,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { LayoutDashboardIcon, ListIcon, ChartBarIcon, FolderIcon, UsersIcon, CameraIcon, FileTextIcon, Settings2Icon, CircleHelpIcon, SearchIcon, DatabaseIcon, FileChartColumnIcon, FileIcon, CommandIcon } from "lucide-react"
-
+import { LayoutDashboardIcon, Music2Icon, MicVocalIcon, UsersIcon, CameraIcon, FileTextIcon, Settings2Icon, CircleHelpIcon, SearchIcon, DatabaseIcon, FileChartColumnIcon, FileIcon, CommandIcon } from "lucide-react"
+import { ROUTES } from "@/routes/routeConstant"
 const data = {
   user: {
     name: "shadcn",
@@ -24,44 +22,35 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
-      icon: (
-        <LayoutDashboardIcon
-        />
-      ),
+      url: ROUTES.DASHBOARD,
+      icon: <LayoutDashboardIcon />,
+      // visible to all roles
+      visible: true,
+    },
+    
+    {
+      title: "Artists",
+      url: ROUTES.ARTISTS,
+      icon: <MicVocalIcon />,
+      // super_admin (read) + artist_manager (full CRUD)
+      // visible: role === "super_admin" || role === "artist_manager",
     },
     {
-      title: "Lifecycle",
-      url: "#",
-      icon: (
-        <ListIcon
-        />
-      ),
+      title: "Songs",
+      url: ROUTES.SONGS,
+      icon: <Music2Icon />,
+      // all roles can see songs
+      visible: true,
     },
     {
-      title: "Analytics",
-      url: "#",
-      icon: (
-        <ChartBarIcon
-        />
-      ),
+      title: "Users",
+      url: ROUTES.USERS,
+      icon: <UsersIcon />,
+      // only super_admin can manage users
+      // visible: role === "super_admin",
+      // badge: role === "super_admin" ? "Admin" : undefined,
     },
-    {
-      title: "Projects",
-      url: "#",
-      icon: (
-        <FolderIcon
-        />
-      ),
-    },
-    {
-      title: "Team",
-      url: "#",
-      icon: (
-        <UsersIcon
-        />
-      ),
-    },
+ 
   ],
   navClouds: [
     {
@@ -194,8 +183,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        {/* <NavDocuments items={data.documents} /> */}
+        {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
