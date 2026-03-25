@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useGetArtists } from "../hooks/artist"
 import {
   Table,
   TableBody,
@@ -8,28 +9,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   MoreHorizontal,
   Plus,
@@ -37,17 +24,17 @@ import {
   Upload,
   Download,
   Music,
-  ChevronLeft,
-  ChevronRight,
   User,
   Disc,
 } from "lucide-react";
 
+import CreateArtist from "../components/createArtist";
+import DeleteArtist from "../components/deleteArtist";
 const GENDERS = ["m", "f", "o"] as const;
 type Gender = (typeof GENDERS)[number];
 
 interface Artist {
-  id: number;
+  id: string;
   name: string;
   dob: string;
   gender: Gender;
@@ -56,14 +43,6 @@ interface Artist {
   no_of_albums_released: number;
   created_at: string;
 }
-
-const MOCK_ARTISTS: Artist[] = [
-  { id: 1, name: "Arijit Singh", dob: "1987-04-25", gender: "m", address: "Mumbai, India", first_release_year: 2010, no_of_albums_released: 8, created_at: "2024-01-10" },
-  { id: 2, name: "Lata Mangeshkar", dob: "1929-09-28", gender: "f", address: "Mumbai, India", first_release_year: 1942, no_of_albums_released: 42, created_at: "2024-01-11" },
-  { id: 3, name: "A.R. Rahman", dob: "1967-01-06", gender: "m", address: "Chennai, India", first_release_year: 1992, no_of_albums_released: 20, created_at: "2024-01-12" },
-  { id: 4, name: "Shreya Ghoshal", dob: "1984-03-12", gender: "f", address: "Kolkata, India", first_release_year: 2002, no_of_albums_released: 11, created_at: "2024-01-13" },
-  { id: 5, name: "Kumar Sanu", dob: "1957-10-20", gender: "m", address: "Kolkata, India", first_release_year: 1989, no_of_albums_released: 30, created_at: "2024-01-14" },
-];
 
 const genderLabel: Record<Gender, string> = { m: "Male", f: "Female", o: "Other" };
 const genderColor: Record<Gender, string> = {
@@ -78,7 +57,9 @@ const EMPTY_FORM = {
 };
 
 export default function Artist() {
-  const [artists, setArtists] = useState<Artist[]>(MOCK_ARTISTS);
+  const { data: artists } = useGetArtists();
+  console.log(artists);
+
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -86,27 +67,6 @@ export default function Artist() {
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  const PAGE_SIZE = 4;
-  const filtered = artists.filter((a) =>
-    a.name.toLowerCase().includes(search.toLowerCase()) ||
-    a.address.toLowerCase().includes(search.toLowerCase())
-  );
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
-  const validate = () => {
-    const e: Record<string, string> = {};
-    if (!form.name.trim()) e.name = "Name is required";
-    if (!form.dob) e.dob = "Date of birth is required";
-    if (!form.address.trim()) e.address = "Address is required";
-    if (!form.first_release_year || form.first_release_year < 1900)
-      e.first_release_year = "Enter a valid year";
-    if (form.no_of_albums_released < 0)
-      e.no_of_albums_released = "Cannot be negative";
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
 
   const openCreate = () => {
     setSelectedArtist(null);
@@ -131,23 +91,7 @@ export default function Artist() {
     setDeleteDialogOpen(true);
   };
 
-  const handleSave = () => {
-    if (!validate()) return;
-    if (selectedArtist) {
-      setArtists((prev) =>
-        prev.map((a) => a.id === selectedArtist.id ? { ...a, ...form } : a)
-      );
-    } else {
-      setArtists((prev) => [
-        ...prev,
-        { id: Date.now(), ...form, created_at: new Date().toISOString().split("T")[0] },
-      ]);
-    }
-    setDialogOpen(false);
-  };
-
   const handleDelete = () => {
-    setArtists((prev) => prev.filter((a) => a.id !== selectedArtist?.id));
     setDeleteDialogOpen(false);
   };
 
@@ -170,12 +114,12 @@ export default function Artist() {
       <div className="border-b border-zinc-800 bg-zinc-900/60 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center shadow-lg shadow-violet-900/40">
+            <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center shadow-lg shadow-violet-900/40">
               <User className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold tracking-tight text-zinc-100">Artists</h1>
-              <p className="text-xs text-zinc-500">{artists.length} total records</p>
+              <h5 className="text-lg font-semibold tracking-tight text-zinc-100">Artists</h5>
+              <p className="text-xs text-zinc-500">{artists?.total} total records</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -233,14 +177,8 @@ export default function Artist() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginated.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center py-16 text-zinc-600">
-                    No artists found
-                  </TableCell>
-                </TableRow>
-              ) : (
-                paginated.map((artist) => (
+              {
+                artists?.data?.map((artist: any) => (
                   <TableRow
                     key={artist.id}
                     className="border-zinc-800/60 hover:bg-zinc-800/40 transition-colors group"
@@ -255,8 +193,8 @@ export default function Artist() {
                     </TableCell>
                     <TableCell className="text-zinc-400 text-sm">{artist.dob}</TableCell>
                     <TableCell>
-                      <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${genderColor[artist.gender]}`}>
-                        {genderLabel[artist.gender]}
+                      <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${genderColor[artist?.gender]}`}>
+                        {genderLabel[artist?.gender]}
                       </span>
                     </TableCell>
                     <TableCell className="text-zinc-400 text-sm">{artist.address}</TableCell>
@@ -295,15 +233,15 @@ export default function Artist() {
                     </TableCell>
                   </TableRow>
                 ))
-              )}
+              }
             </TableBody>
           </Table>
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between text-xs text-zinc-500">
+        {/* <div className="flex items-center justify-between text-xs text-zinc-500">
           <span>
-            Showing {Math.min((page - 1) * PAGE_SIZE + 1, filtered.length)}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
+            Showing {artists?.total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} of {artists?.total}
           </span>
           <div className="flex items-center gap-1">
             <Button
@@ -314,16 +252,21 @@ export default function Artist() {
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
+
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
               <Button
                 key={p}
                 variant="ghost" size="sm"
                 onClick={() => setPage(p)}
-                className={`h-7 w-7 text-xs ${page === p ? "bg-violet-600 text-white hover:bg-violet-500" : "text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800"}`}
+                className={`h-7 w-7 text-xs ${page === p
+                    ? "bg-violet-600 text-white hover:bg-violet-500"
+                    : "text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800"
+                  }`}
               >
                 {p}
               </Button>
             ))}
+
             <Button
               variant="ghost" size="icon"
               disabled={page === totalPages}
@@ -333,112 +276,12 @@ export default function Artist() {
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
-        </div>
+        </div> */}
       </div>
 
-      {/* Create / Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="bg-zinc-900 border-zinc-800 text-zinc-100 sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="text-base font-semibold">
-              {selectedArtist ? "Edit Artist" : "Add New Artist"}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="grid grid-cols-2 gap-4 py-2">
-            <div className="col-span-2 space-y-1.5">
-              <Label className="text-xs text-zinc-400">Full Name</Label>
-              <Input
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="bg-zinc-800 border-zinc-700 text-zinc-100 h-9 text-sm focus:border-violet-500"
-                placeholder="e.g. Arijit Singh"
-              />
-              {errors.name && <p className="text-xs text-red-400">{errors.name}</p>}
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs text-zinc-400">Date of Birth</Label>
-              <Input
-                type="date"
-                value={form.dob}
-                onChange={(e) => setForm({ ...form, dob: e.target.value })}
-                className="bg-zinc-800 border-zinc-700 text-zinc-100 h-9 text-sm focus:border-violet-500"
-              />
-              {errors.dob && <p className="text-xs text-red-400">{errors.dob}</p>}
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs text-zinc-400">Gender</Label>
-              <Select value={form.gender} onValueChange={(v) => setForm({ ...form, gender: v as Gender })}>
-                <SelectTrigger className="bg-zinc-800 border-zinc-700 text-zinc-100 h-9 text-sm focus:border-violet-500">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-zinc-900 border-zinc-700">
-                  <SelectItem value="m" className="text-zinc-300 focus:bg-zinc-800 focus:text-zinc-100">Male</SelectItem>
-                  <SelectItem value="f" className="text-zinc-300 focus:bg-zinc-800 focus:text-zinc-100">Female</SelectItem>
-                  <SelectItem value="o" className="text-zinc-300 focus:bg-zinc-800 focus:text-zinc-100">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="col-span-2 space-y-1.5">
-              <Label className="text-xs text-zinc-400">Address</Label>
-              <Input
-                value={form.address}
-                onChange={(e) => setForm({ ...form, address: e.target.value })}
-                className="bg-zinc-800 border-zinc-700 text-zinc-100 h-9 text-sm focus:border-violet-500"
-                placeholder="City, Country"
-              />
-              {errors.address && <p className="text-xs text-red-400">{errors.address}</p>}
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs text-zinc-400">First Release Year</Label>
-              <Input
-                type="number"
-                value={form.first_release_year}
-                onChange={(e) => setForm({ ...form, first_release_year: Number(e.target.value) })}
-                className="bg-zinc-800 border-zinc-700 text-zinc-100 h-9 text-sm focus:border-violet-500"
-              />
-              {errors.first_release_year && <p className="text-xs text-red-400">{errors.first_release_year}</p>}
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs text-zinc-400">Albums Released</Label>
-              <Input
-                type="number"
-                value={form.no_of_albums_released}
-                onChange={(e) => setForm({ ...form, no_of_albums_released: Number(e.target.value) })}
-                className="bg-zinc-800 border-zinc-700 text-zinc-100 h-9 text-sm focus:border-violet-500"
-              />
-              {errors.no_of_albums_released && <p className="text-xs text-red-400">{errors.no_of_albums_released}</p>}
-            </div>
-          </div>
-          <DialogFooter className="gap-2">
-            <Button variant="ghost" onClick={() => setDialogOpen(false)} className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 h-8 text-sm">
-              Cancel
-            </Button>
-            <Button onClick={handleSave} className="bg-violet-600 hover:bg-violet-500 text-white h-8 text-sm shadow-lg shadow-violet-900/30">
-              {selectedArtist ? "Save Changes" : "Create Artist"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
-      {/* Delete Confirm Dialog */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="bg-zinc-900 border-zinc-800 text-zinc-100 sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="text-base font-semibold">Delete Artist</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-zinc-400 py-2">
-            Are you sure you want to delete <span className="text-zinc-100 font-medium">{selectedArtist?.name}</span>? This action cannot be undone.
-          </p>
-          <DialogFooter className="gap-2">
-            <Button variant="ghost" onClick={() => setDeleteDialogOpen(false)} className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 h-8 text-sm">
-              Cancel
-            </Button>
-            <Button onClick={handleDelete} className="bg-red-600 hover:bg-red-500 text-white h-8 text-sm">
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <CreateArtist open={dialogOpen} onOpenChange={setDialogOpen} artistId={selectedArtist?.id??''} />
+      <DeleteArtist deleteDialogOpen={deleteDialogOpen} setDeleteDialogOpen={setDeleteDialogOpen} artistId={selectedArtist?.id??''} />
     </div>
   );
 }
