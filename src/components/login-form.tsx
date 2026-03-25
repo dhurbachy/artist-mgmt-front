@@ -10,16 +10,16 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { useLogin } from "@/app/auth/hooks/auth" // adjust path as needed
-// import { useRouter } from "react-router"    // or react-router-dom equivalent
-
+import { useLogin } from "@/app/auth/hooks/auth" 
+import { useNavigate } from "react-router"
+import {ROUTES} from "../routes/routeConstant"
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   // const router = useRouter()
   const { mutate: login, isPending, isError, error } = useLogin()
-
+ const navigate=useNavigate();
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
@@ -34,6 +34,7 @@ export function LoginForm({
           if (token) {
             localStorage.setItem("access_token", token); // Save token
           }
+          navigate(ROUTES.DASHBOARD);
 
         },
       }
@@ -43,13 +44,13 @@ export function LoginForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0">
-        <CardContent className="grid p-0 md:grid-cols-2">
+        <CardContent className="grid p-0 md:grid-cols-1">
           <form className="p-6 md:p-8" onSubmit={handleSubmit}>
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
-                <h1 className="text-2xl font-bold">Welcome back</h1>
+                <h4 className="text-2xl font-bold">Welcome back</h4>
                 <p className="text-balance text-muted-foreground">
-                  Login to your Acme Inc account
+                  Login to Cloco Inc.
                 </p>
               </div>
 
@@ -105,13 +106,13 @@ export function LoginForm({
             </FieldGroup>
           </form>
 
-          <div className="relative hidden bg-muted md:block">
+          {/* <div className="relative hidden bg-muted md:block">
             <img
               src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop"
               alt="Decorative"
               className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
             />
-          </div>
+          </div> */}
         </CardContent>
       </Card>
     </div>
