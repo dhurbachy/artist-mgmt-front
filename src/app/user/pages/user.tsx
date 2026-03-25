@@ -18,7 +18,7 @@ import {
   MoreHorizontal, Plus, Search, ChevronLeft, ChevronRight,
   ShieldCheck, UserCog, Mic2,
 } from "lucide-react";
-
+import {useGetMe} from "../hooks/user"
 type Role = "super_admin" | "artist_manager" | "artist";
 
 interface User {
@@ -66,6 +66,8 @@ const EMPTY_FORM = {
 };
 
 export default function User() {
+  const {data}=useGetMe();
+  console.log(data,'Data');
   const [users, setUsers] = useState<User[]>(MOCK_USERS);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<Role | "all">("all");
@@ -145,7 +147,7 @@ export default function User() {
               <ShieldCheck className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold tracking-tight text-zinc-100">Users</h1>
+              <h4 className="text-lg font-semibold tracking-tight text-zinc-100">Users</h4>
               <p className="text-xs text-zinc-500">{users.length} total accounts</p>
             </div>
           </div>
