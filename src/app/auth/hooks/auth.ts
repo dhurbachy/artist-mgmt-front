@@ -2,13 +2,15 @@ import { useMutation,useQuery } from "@tanstack/react-query";
 import type { ApiError } from "@/services/artist-services";
 import { AuthService } from "@/services/artist-services/services/AuthService";
 import { OpenAPI } from "@/services/artist-services/core/OpenAPI";
-
+import { useNavigate } from "react-router";
+import {ROUTES} from "@/routes/routeConstant"
 interface LoginPayload {
   email: string;
   password: string;
 }
 // -------------------- LOGIN --------------------
 export const useLogin = () => {
+
   return useMutation({
     mutationFn: (payload: LoginPayload) =>
       AuthService.authControllerLogin(payload),
@@ -26,6 +28,7 @@ export const useLogin = () => {
 
 // -------------------- REGISTER --------------------
 export const useRegister = () => {
+  const navigate=useNavigate();
   return useMutation({
     mutationFn: (payload: {
       first_name: string;
@@ -33,12 +36,8 @@ export const useRegister = () => {
       email: string;
       password: string;
     }) => AuthService.authControllerRegister(payload),
-    onSuccess: (data) => {
-      const token = data.access_token;
-      if (token) {
-        localStorage.setItem("access_token", token);
-        OpenAPI.TOKEN = token;
-      }
+    onSuccess: () => {
+      navigate(ROUTES.LOGIN);
     },
     onError: (error: ApiError) => {
       console.error("Registration failed", error);
