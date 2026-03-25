@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { useLogin } from "@/app/auth/hooks/auth" 
-import { useNavigate } from "react-router"
+import { Link, useNavigate } from "react-router"
 import {ROUTES} from "../routes/routeConstant"
 export function LoginForm({
   className,
@@ -101,7 +101,7 @@ export function LoginForm({
               </Field>
 
               <FieldDescription className="text-center">
-                Don&apos;t have an account? <a href="#">Sign up</a>
+                Don&apos;t have an account? <Link to="/register">Sign up</Link>
               </FieldDescription>
             </FieldGroup>
           </form>
