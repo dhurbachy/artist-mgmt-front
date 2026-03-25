@@ -3,27 +3,24 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from "@/components/ui/dialog";
-import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   MoreHorizontal, Plus, Search, ChevronLeft, ChevronRight,
   Music2, ArrowLeft, Headphones,
 } from "lucide-react";
+import DeleteSong from "../components/deleteSong";
+import CreateEditSong from "../components/createEditSong";
+import { useGetAllSongs } from "../hooks/song";
+import { useGetArtists } from "../../artist/hooks/artist";
 
 type Genre = "rnb" | "country" | "classic" | "rock" | "jazz";
 
 interface Song {
-  id: number;
-  artist_id: number;
+  id: string;
+  artist_id: string;
   title: string;
   album_name: string;
   genre: Genre;
@@ -31,40 +28,43 @@ interface Song {
   updated_at: string;
 }
 
-const MOCK_SONGS: Song[] = [
-  { id: 1, artist_id: 1, title: "Tum Hi Ho", album_name: "Aashiqui 2", genre: "rnb", created_at: "2013-04-26", updated_at: "2024-01-10" },
-  { id: 2, artist_id: 1, title: "Ae Dil Hai Mushkil", album_name: "ADHM", genre: "classic", created_at: "2016-10-28", updated_at: "2024-01-11" },
-  { id: 3, artist_id: 1, title: "Raabta", album_name: "Agent Sai Srinivasa", genre: "rnb", created_at: "2017-09-07", updated_at: "2024-01-12" },
-  { id: 4, artist_id: 1, title: "Gerua", album_name: "Dilwale", genre: "country", created_at: "2015-12-15", updated_at: "2024-01-13" },
-  { id: 5, artist_id: 1, title: "Channa Mereya", album_name: "Ae Dil Hai Mushkil", genre: "classic", created_at: "2016-10-28", updated_at: "2024-01-14" },
-];
-
 const GENRES: Genre[] = ["rnb", "country", "classic", "rock", "jazz"];
 
 const genreConfig: Record<Genre, { label: string; badge: string }> = {
-  rnb: { label: "R&B", badge: "bg-pink-500/10 text-pink-400 border-pink-500/20" },
+  rnb:     { label: "R&B",     badge: "bg-pink-500/10 text-pink-400 border-pink-500/20" },
   country: { label: "Country", badge: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
   classic: { label: "Classic", badge: "bg-violet-500/10 text-violet-400 border-violet-500/20" },
-  rock: { label: "Rock", badge: "bg-red-500/10 text-red-400 border-red-500/20" },
-  jazz: { label: "Jazz", badge: "bg-sky-500/10 text-sky-400 border-sky-500/20" },
+  rock:    { label: "Rock",    badge: "bg-red-500/10 text-red-400 border-red-500/20" },
+  jazz:    { label: "Jazz",    badge: "bg-sky-500/10 text-sky-400 border-sky-500/20" },
 };
 
-const MOCK_ARTIST = { id: 1, name: "Arijit Singh" };
-
-const EMPTY_FORM = { title: "", album_name: "", genre: "rnb" as Genre };
-
 export default function Song() {
-  const [songs, setSongs] = useState<Song[]>(MOCK_SONGS);
   const [search, setSearch] = useState("");
   const [genreFilter, setGenreFilter] = useState<Genre | "all">("all");
   const [page, setPage] = useState(1);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
-  const [form, setForm] = useState(EMPTY_FORM);
-  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const PAGE_SIZE = 4;
+
+  // ✅ Step 1: Get all artists, pick the first one
+  const { data: artistsResponse } = useGetArtists(1, 100);
+  const artists = artistsResponse?.data ?? [];
+  const firstArtist = artists[0] ?? null;
+
+  // ✅ Step 2: Fetch songs for that first artist
+  const { data: songsResponse, isLoading } = useGetAllSongs(
+    firstArtist?.id ?? "",
+    page,
+    PAGE_SIZE,
+  );
+
+  const songs: Song[] = songsResponse?.data ?? [];
+  const total: number = songsResponse?.total ?? 0;
+  const totalPages: number = songsResponse?.lastPage ?? 1;
+
+  // Client-side filter (search + genre) on current page
   const filtered = songs.filter((s) => {
     const matchSearch =
       s.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -72,54 +72,19 @@ export default function Song() {
     const matchGenre = genreFilter === "all" || s.genre === genreFilter;
     return matchSearch && matchGenre;
   });
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const validate = () => {
-    const e: Record<string, string> = {};
-    if (!form.title.trim()) e.title = "Title is required";
-    if (!form.album_name.trim()) e.album_name = "Album name is required";
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
+  const genreCounts: Record<string, number> = { all: songs.length };
+  GENRES.forEach((g) => { genreCounts[g] = songs.filter((s) => s.genre === g).length; });
 
   const openCreate = () => {
     setSelectedSong(null);
-    setForm(EMPTY_FORM);
-    setErrors({});
     setDialogOpen(true);
   };
 
   const openEdit = (song: Song) => {
     setSelectedSong(song);
-    setForm({ title: song.title, album_name: song.album_name, genre: song.genre });
-    setErrors({});
     setDialogOpen(true);
   };
-
-  const handleSave = () => {
-    if (!validate()) return;
-    const now = new Date().toISOString().split("T")[0];
-    if (selectedSong) {
-      setSongs((prev) =>
-        prev.map((s) => s.id === selectedSong.id ? { ...s, ...form, updated_at: now } : s)
-      );
-    } else {
-      setSongs((prev) => [...prev, {
-        id: Date.now(), artist_id: MOCK_ARTIST.id, ...form,
-        created_at: now, updated_at: now,
-      }]);
-    }
-    setDialogOpen(false);
-  };
-
-  const handleDelete = () => {
-    setSongs((prev) => prev.filter((s) => s.id !== selectedSong?.id));
-    setDeleteDialogOpen(false);
-  };
-
-  const genreCounts: Record<string, number> = { all: songs.length };
-  GENRES.forEach((g) => { genreCounts[g] = songs.filter((s) => s.genre === g).length; });
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans">
@@ -136,11 +101,14 @@ export default function Song() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-lg font-semibold tracking-tight text-zinc-100">Songs</h1>
+                <h4 className="text-lg font-semibold tracking-tight text-zinc-100">Songs</h4>
                 <span className="text-zinc-600 text-xs">—</span>
-                <span className="text-sm text-zinc-400">{MOCK_ARTIST.name}</span>
+                {/* ✅ Show first artist name */}
+                <span className="text-sm text-zinc-400">
+                  {firstArtist?.name ?? "Loading..."}
+                </span>
               </div>
-              <p className="text-xs text-zinc-500">{songs.length} tracks in collection</p>
+              <p className="text-xs text-zinc-500">{total} tracks in collection</p>
             </div>
           </div>
           <Button
@@ -168,9 +136,7 @@ export default function Song() {
           {GENRES.map((g) => {
             const cfg = genreConfig[g];
             return (
-              <button
-                key={g}
-                onClick={() => { setGenreFilter(g); setPage(1); }}
+              <button key={g} onClick={() => { setGenreFilter(g); setPage(1); }}
                 className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${
                   genreFilter === g
                     ? `${cfg.badge} border-current`
@@ -209,12 +175,20 @@ export default function Song() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginated.length === 0 ? (
+              {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-16 text-zinc-600">No songs found</TableCell>
+                  <TableCell colSpan={7} className="text-center py-16 text-zinc-600">
+                    Loading...
+                  </TableCell>
+                </TableRow>
+              ) : filtered.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-16 text-zinc-600">
+                    No songs found
+                  </TableCell>
                 </TableRow>
               ) : (
-                paginated.map((song, idx) => {
+                filtered.map((song, idx) => {
                   const cfg = genreConfig[song.genre];
                   return (
                     <TableRow key={song.id} className="border-zinc-800/60 hover:bg-zinc-800/40 transition-colors group">
@@ -235,8 +209,12 @@ export default function Song() {
                           {cfg.label}
                         </span>
                       </TableCell>
-                      <TableCell className="text-zinc-500 text-xs">{song.created_at}</TableCell>
-                      <TableCell className="text-zinc-500 text-xs">{song.updated_at}</TableCell>
+                      <TableCell className="text-zinc-500 text-xs">
+                        {new Date(song.created_at).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell className="text-zinc-500 text-xs">
+                        {new Date(song.updated_at).toLocaleDateString()}
+                      </TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -245,13 +223,13 @@ export default function Song() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="bg-zinc-900 border-zinc-800 text-zinc-300 w-36">
-                            <DropdownMenuItem onClick={() => openEdit(song)} className="hover:bg-zinc-800 hover:text-zinc-100 cursor-pointer text-sm">
+                            <DropdownMenuItem onClick={() => openEdit(song)}
+                              className="hover:bg-zinc-800 hover:text-zinc-100 cursor-pointer text-sm">
                               Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => { setSelectedSong(song); setDeleteDialogOpen(true); }}
-                              className="hover:bg-red-950 text-red-400 hover:text-red-300 cursor-pointer text-sm"
-                            >
+                              className="hover:bg-red-950 text-red-400 hover:text-red-300 cursor-pointer text-sm">
                               Delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -268,93 +246,44 @@ export default function Song() {
         {/* Pagination */}
         <div className="flex items-center justify-between text-xs text-zinc-500">
           <span>
-            Showing {Math.min((page - 1) * PAGE_SIZE + 1, filtered.length)}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
+            Showing {total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} of {total}
           </span>
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" disabled={page === 1} onClick={() => setPage((p) => p - 1)} className="h-7 w-7 text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800 disabled:opacity-30">
+            <Button variant="ghost" size="icon" disabled={page === 1}
+              onClick={() => setPage((p) => p - 1)}
+              className="h-7 w-7 text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800 disabled:opacity-30">
               <ChevronLeft className="w-4 h-4" />
             </Button>
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-              <Button key={p} variant="ghost" size="sm" onClick={() => setPage(p)} className={`h-7 w-7 text-xs ${page === p ? "bg-rose-600 text-white hover:bg-rose-500" : "text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800"}`}>
+              <Button key={p} variant="ghost" size="sm" onClick={() => setPage(p)}
+                className={`h-7 w-7 text-xs ${page === p ? "bg-rose-600 text-white hover:bg-rose-500" : "text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800"}`}>
                 {p}
               </Button>
             ))}
-            <Button variant="ghost" size="icon" disabled={page === totalPages} onClick={() => setPage((p) => p + 1)} className="h-7 w-7 text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800 disabled:opacity-30">
+            <Button variant="ghost" size="icon" disabled={page === totalPages}
+              onClick={() => setPage((p) => p + 1)}
+              className="h-7 w-7 text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800 disabled:opacity-30">
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Create / Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="bg-zinc-900 border-zinc-800 text-zinc-100 sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-base font-semibold">
-              {selectedSong ? "Edit Song" : "Add New Song"}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <Label className="text-xs text-zinc-400">Song Title</Label>
-              <Input
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="bg-zinc-800 border-zinc-700 text-zinc-100 h-9 text-sm focus:border-rose-500"
-                placeholder="e.g. Tum Hi Ho"
-              />
-              {errors.title && <p className="text-xs text-red-400">{errors.title}</p>}
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs text-zinc-400">Album Name</Label>
-              <Input
-                value={form.album_name}
-                onChange={(e) => setForm({ ...form, album_name: e.target.value })}
-                className="bg-zinc-800 border-zinc-700 text-zinc-100 h-9 text-sm focus:border-rose-500"
-                placeholder="e.g. Aashiqui 2"
-              />
-              {errors.album_name && <p className="text-xs text-red-400">{errors.album_name}</p>}
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs text-zinc-400">Genre</Label>
-              <Select value={form.genre} onValueChange={(v) => setForm({ ...form, genre: v as Genre })}>
-                <SelectTrigger className="bg-zinc-800 border-zinc-700 text-zinc-100 h-9 text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-zinc-900 border-zinc-700">
-                  {GENRES.map((g) => (
-                    <SelectItem key={g} value={g} className="text-zinc-300 focus:bg-zinc-800 focus:text-zinc-100">
-                      {genreConfig[g].label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter className="gap-2">
-            <Button variant="ghost" onClick={() => setDialogOpen(false)} className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 h-8 text-sm">Cancel</Button>
-            <Button onClick={handleSave} className="bg-rose-600 hover:bg-rose-500 text-white h-8 text-sm shadow-lg shadow-rose-900/30">
-              {selectedSong ? "Save Changes" : "Add Song"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* ✅ Pass first artist's id */}
+      <CreateEditSong
+        dialogOpen={dialogOpen}
+        setDialogOpen={setDialogOpen}
+        artistId={firstArtist?.id ?? null}
+        songId={selectedSong?.id ?? null}
+      />
 
-      {/* Delete Confirm */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="bg-zinc-900 border-zinc-800 text-zinc-100 sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="text-base font-semibold">Delete Song</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-zinc-400 py-2">
-            Remove <span className="text-zinc-100 font-medium">"{selectedSong?.title}"</span> permanently?
-          </p>
-          <DialogFooter className="gap-2">
-            <Button variant="ghost" onClick={() => setDeleteDialogOpen(false)} className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 h-8 text-sm">Cancel</Button>
-            <Button onClick={handleDelete} className="bg-red-600 hover:bg-red-500 text-white h-8 text-sm">Delete</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <DeleteSong
+        deleteDialogOpen={deleteDialogOpen}
+        setDeleteDialogOpen={setDeleteDialogOpen}
+        artistId={firstArtist?.id ?? null}
+        songId={selectedSong?.id ?? null}
+        songTitle={selectedSong?.title??null}
+      />
     </div>
   );
 }
