@@ -10,6 +10,7 @@ import {
   QueryClientProvider,
 } from '@tanstack/react-query'
 import { OpenAPI } from "@/services/artist-services/core/OpenAPI";
+import "./services/apiInterceptor";
 OpenAPI.TOKEN = async () => localStorage.getItem("access_token") ?? "";
 
 const queryClient = new QueryClient()
