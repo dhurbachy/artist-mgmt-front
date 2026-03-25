@@ -11,9 +11,21 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { LayoutDashboardIcon, Music2Icon, MicVocalIcon, UsersIcon, CameraIcon, FileTextIcon, Settings2Icon, CircleHelpIcon, SearchIcon, DatabaseIcon, FileChartColumnIcon, FileIcon, CommandIcon } from "lucide-react"
+import { LayoutDashboardIcon, Music2Icon, MicVocalIcon, UsersIcon,CommandIcon } from "lucide-react"
 import { ROUTES } from "@/routes/routeConstant"
-const data = {
+import { useGetMe } from "@/app/user/hooks/user"
+const RoleConstant = {
+  Super_Admin: 'super_admin',
+  Artist_Manager: 'artist_manager',
+  Artist: 'artist',
+}
+
+
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const {data:User}=useGetMe();
+  const userRole=User?.role;
+  console.log(userRole);
+  const data = {
   user: {
     name: "shadcn",
     email: "m@example.com",
@@ -27,143 +39,34 @@ const data = {
       // visible to all roles
       visible: true,
     },
-    
+
     {
       title: "Artists",
       url: ROUTES.ARTISTS,
       icon: <MicVocalIcon />,
       // super_admin (read) + artist_manager (full CRUD)
-      // visible: role === "super_admin" || role === "artist_manager",
+      visible: [RoleConstant.Super_Admin, RoleConstant.Artist_Manager].includes(userRole),
     },
     {
       title: "Songs",
       url: ROUTES.SONGS,
       icon: <Music2Icon />,
       // all roles can see songs
-      visible: true,
+      visible: [RoleConstant.Super_Admin, RoleConstant.Artist].includes(userRole),
     },
     {
       title: "Users",
       url: ROUTES.USERS,
       icon: <UsersIcon />,
       // only super_admin can manage users
-      // visible: role === "super_admin",
+        visible:userRole===RoleConstant.Super_Admin,
       // badge: role === "super_admin" ? "Admin" : undefined,
     },
- 
-  ],
-  navClouds: [
-    {
-      title: "Capture",
-      icon: (
-        <CameraIcon
-        />
-      ),
-      isActive: true,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Proposal",
-      icon: (
-        <FileTextIcon
-        />
-      ),
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Prompts",
-      icon: (
-        <FileTextIcon
-        />
-      ),
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: (
-        <Settings2Icon
-        />
-      ),
-    },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: (
-        <CircleHelpIcon
-        />
-      ),
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: (
-        <SearchIcon
-        />
-      ),
-    },
-  ],
-  documents: [
-    {
-      name: "Data Library",
-      url: "#",
-      icon: (
-        <DatabaseIcon
-        />
-      ),
-    },
-    {
-      name: "Reports",
-      url: "#",
-      icon: (
-        <FileChartColumnIcon
-        />
-      ),
-    },
-    {
-      name: "Word Assistant",
-      url: "#",
-      icon: (
-        <FileIcon
-        />
-      ),
-    },
+
   ],
 }
+const filteredNavMain = data.navMain.filter((item) => item.visible === true);
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -182,12 +85,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={filteredNavMain} />
         {/* <NavDocuments items={data.documents} /> */}
         {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser  />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   )

@@ -7,6 +7,7 @@ import NotFound from "@/utils/notFound";
 import Forbidden from "@/utils/forbidden";
 // import Guard from "@/components/Guard";
 export default function RouteMain() {
+    console.log(authRoutes,'authRoutes');
     return (
         <>
 

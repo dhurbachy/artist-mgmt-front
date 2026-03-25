@@ -1,10 +1,12 @@
-import Forbidden from "@/utils/forbidden";
+import { Navigate } from "react-router";
 export default function ProtectedRoute({
   children,
 }: {
   children: React.ReactNode;
 }) {
-   const isAuthenticated=true;
+  //  const isAuthenticated=true;
+     const isAuthenticated = !!localStorage.getItem("access_token");
+
   if (!isAuthenticated) {
     // authService.signinRedirect();
 
@@ -19,7 +21,8 @@ export default function ProtectedRoute({
     //   >
     //   </div>
     // );
-    return <Forbidden />
+    return <Navigate to="/login" replace />
+
   }
 
 
