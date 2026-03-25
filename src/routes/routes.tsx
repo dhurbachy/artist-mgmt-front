@@ -4,6 +4,7 @@ const Login=lazy(()=>import('../app/auth/pages/login'));
 const User=lazy(()=>import('../app/user/pages/user'));
 const Artist=lazy(()=>import('../app/artist/pages/artist'));
 const Song=lazy(()=>import('../app/song/pages/song'));
+const Register=lazy(()=>import('../app/auth/pages/register'));
 export const RouteList=[
     {
     path: ROUTES.HOME,
@@ -16,6 +17,11 @@ export const RouteList=[
   {
     path:ROUTES.LOGIN,
     element:<Login />,
+    layout:'auth'
+  },
+  {
+    path:ROUTES.REGISTER,
+    element:<Register />,
     layout:'auth'
   },
   {
