@@ -8,12 +8,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox";
 import {
   MoreHorizontal, Plus, Search, ChevronLeft, ChevronRight,
   Music2, ArrowLeft, Headphones,
@@ -49,23 +50,21 @@ export default function Song() {
   const [search, setSearch] = useState("");
   const [genreFilter, setGenreFilter] = useState<Genre | "all">("all");
   const [page, setPage] = useState(1);
+  const limit = 10;
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
-
-  const PAGE_SIZE = 4;
-
-  const { data: artistsResponse } = useGetArtists();
+  const { data: artistsResponse } = useGetArtists(page,99);
   const artists = artistsResponse?.data ?? [];
   const firstArtist = artists[0] ?? null;
-  const [selectedArtist, setSelectedArtist] = useState<string | null>(artists[0]?.id??null);
+  const [selectedArtist, setSelectedArtist] = useState<string | null>(artists[0]?.id ?? null);
 
-const activeArtistId = selectedArtist ?? artists[0]?.id ?? "";
+  const activeArtistId = selectedArtist ?? artists[0]?.id ?? "";
 
   const { data: songsResponse, isLoading } = useGetAllSongs(
     activeArtistId ?? "",
     page,
-    PAGE_SIZE,
+    10,
   );
 
   const songs: Song[] = songsResponse?.data ?? [];
@@ -93,6 +92,11 @@ const activeArtistId = selectedArtist ?? artists[0]?.id ?? "";
     setDialogOpen(true);
   };
 
+  const selectValue=artists.map((artist)=>({
+    label: artist.name,
+  value: artist.id,
+  }));
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans">
       {/* Header */}
@@ -111,7 +115,7 @@ const activeArtistId = selectedArtist ?? artists[0]?.id ?? "";
                 <h4 className="text-lg font-semibold tracking-tight text-zinc-100">Songs</h4>
                 <span className="text-zinc-600 text-xs">—</span>
                 <span className="text-sm text-zinc-400">
-                  {artists.find((item:any)=>item.id===selectedArtist)?.name??'Loading ...'}
+                  {artists.find((item: any) => item.id === selectedArtist)?.name ?? 'Loading ...'}
                 </span>
               </div>
               <p className="text-xs text-zinc-500">{total} tracks in collection</p>
@@ -168,7 +172,7 @@ const activeArtistId = selectedArtist ?? artists[0]?.id ?? "";
 
           </div>
           <div className="relative max-w-sm">
-            <Select onValueChange={(value) => { setSelectedArtist(value); console.log(value) }}>
+            {/* <Select onValueChange={(value) => { setSelectedArtist(value); console.log(value) }}>
               <SelectTrigger className="w-[180px] bg-zinc-900 border-zinc-800 text-zinc-100 h-9 text-sm focus:ring-rose-500">
                 <SelectValue placeholder="Filter by Artist" />
               </SelectTrigger>
@@ -177,7 +181,25 @@ const activeArtistId = selectedArtist ?? artists[0]?.id ?? "";
                   <SelectItem value={item.id}>{item?.name}</SelectItem>
                 ))}
               </SelectContent>
-            </Select>
+            </Select> */}
+
+            <Combobox
+              items={selectValue}
+              itemToStringValue={(selectValue) => selectValue.label}
+              onValueChange={(selectValue)=>setSelectedArtist(selectValue.value)}
+            >
+              <ComboboxInput placeholder="Select a framework" />
+              <ComboboxContent>
+                <ComboboxEmpty>No items found.</ComboboxEmpty>
+                <ComboboxList>
+                  {(framework) => (
+                    <ComboboxItem key={framework.value} value={framework}>
+                      {framework.label}
+                    </ComboboxItem>
+                  )}
+                </ComboboxList>
+              </ComboboxContent>
+            </Combobox>
 
           </div>
         </div>
@@ -215,7 +237,7 @@ const activeArtistId = selectedArtist ?? artists[0]?.id ?? "";
                   return (
                     <TableRow key={song.id} className="border-zinc-800/60 hover:bg-zinc-800/40 transition-colors group">
                       <TableCell className="py-3 px-4 text-zinc-600 text-sm font-mono">
-                        {(page - 1) * PAGE_SIZE + idx + 1}
+                        {(page - 1) * limit + idx + 1}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-3">
@@ -268,7 +290,7 @@ const activeArtistId = selectedArtist ?? artists[0]?.id ?? "";
         {/* Pagination */}
         <div className="flex items-center justify-between text-xs text-zinc-500">
           <span>
-            Showing {total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} of {total}
+            Showing {total === 0 ? 0 : (page - 1) * limit + 1}–{Math.min(page * limit, total)} of {total}
           </span>
           <div className="flex items-center gap-1">
             <Button variant="ghost" size="icon" disabled={page === 1}
