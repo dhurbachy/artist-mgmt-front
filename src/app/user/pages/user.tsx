@@ -2,27 +2,23 @@ import { useState } from "react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from "@/components/ui/dialog";
+
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   MoreHorizontal, Plus, Search, ChevronLeft, ChevronRight,
   ShieldCheck, UserCog, Mic2,
 } from "lucide-react";
-import {useGetMe} from "../hooks/user"
+import { useGetMe, useGetUsers } from "../hooks/user"
 type Role = "super_admin" | "artist_manager" | "artist";
-
+import DeleteUser from "../components/deleteUser";
+import CreateEditUser from "../components/createEditUser";
 interface User {
-  id: number;
+  id: string;
   first_name: string;
   last_name: string;
   email: string;
@@ -34,13 +30,7 @@ interface User {
   created_at: string;
 }
 
-const MOCK_USERS: User[] = [
-  { id: 1, first_name: "Rajan", last_name: "Shrestha", email: "rajan@example.com", phone: "9841000001", dob: "1985-06-12", gender: "m", address: "Kathmandu", role: "super_admin", created_at: "2024-01-05" },
-  { id: 2, first_name: "Priya", last_name: "Thapa", email: "priya@example.com", phone: "9841000002", dob: "1990-03-22", gender: "f", address: "Pokhara", role: "artist_manager", created_at: "2024-01-08" },
-  { id: 3, first_name: "Bipin", last_name: "Karki", email: "bipin@example.com", phone: "9841000003", dob: "1995-11-01", gender: "m", address: "Lalitpur", role: "artist", created_at: "2024-01-10" },
-  { id: 4, first_name: "Sanu", last_name: "Gurung", email: "sanu@example.com", phone: "9841000004", dob: "1992-07-18", gender: "f", address: "Bhaktapur", role: "artist", created_at: "2024-01-12" },
-  { id: 5, first_name: "Milan", last_name: "Rai", email: "milan@example.com", phone: "9841000005", dob: "1988-09-30", gender: "m", address: "Biratnagar", role: "artist_manager", created_at: "2024-01-15" },
-];
+
 
 const roleConfig: Record<Role, { label: string; icon: React.ElementType; color: string; badge: string }> = {
   super_admin: {
@@ -60,23 +50,18 @@ const roleConfig: Record<Role, { label: string; icon: React.ElementType; color: 
   },
 };
 
-const EMPTY_FORM = {
-  first_name: "", last_name: "", email: "", phone: "",
-  dob: "", gender: "m" as const, address: "", role: "artist" as Role, password: "",
-};
 
 export default function User() {
-  const {data}=useGetMe();
-  console.log(data,'Data');
-  const [users, setUsers] = useState<User[]>(MOCK_USERS);
+  const { data } = useGetMe();
+  const { data: usersData } = useGetUsers()
+  console.log(data, 'Data', usersData);
+  const users: User[] = usersData?.data ?? [];
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<Role | "all">("all");
   const [page, setPage] = useState(1);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [form, setForm] = useState(EMPTY_FORM);
-  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const PAGE_SIZE = 4;
   const filtered = users.filter((u) => {
@@ -89,50 +74,19 @@ export default function User() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const validate = () => {
-    const e: Record<string, string> = {};
-    if (!form.first_name.trim()) e.first_name = "Required";
-    if (!form.last_name.trim()) e.last_name = "Required";
-    if (!form.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) e.email = "Invalid email";
-    if (!form.phone.match(/^\d{10}$/)) e.phone = "10-digit phone required";
-    if (!form.dob) e.dob = "Required";
-    if (!selectedUser && !form.password) e.password = "Password required for new users";
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
-
   const openCreate = () => {
     setSelectedUser(null);
-    setForm(EMPTY_FORM);
-    setErrors({});
     setDialogOpen(true);
   };
 
   const openEdit = (user: User) => {
     setSelectedUser(user);
-    setForm({
-      first_name: user.first_name, last_name: user.last_name,
-      email: user.email, phone: user.phone, dob: user.dob,
-      gender: user.gender, address: user.address, role: user.role, password: "",
-    });
-    setErrors({});
+   
     setDialogOpen(true);
   };
 
-  const handleSave = () => {
-    if (!validate()) return;
-    if (selectedUser) {
-      setUsers((prev) => prev.map((u) => u.id === selectedUser.id ? { ...u, ...form } : u));
-    } else {
-      setUsers((prev) => [...prev, { id: Date.now(), ...form, created_at: new Date().toISOString().split("T")[0] }]);
-    }
-    setDialogOpen(false);
-  };
+  
 
-  const handleDelete = () => {
-    setUsers((prev) => prev.filter((u) => u.id !== selectedUser?.id));
-    setDeleteDialogOpen(false);
-  };
 
   const roleCounts = { all: users.length, super_admin: 0, artist_manager: 0, artist: 0 };
   users.forEach((u) => roleCounts[u.role]++);
@@ -170,13 +124,12 @@ export default function User() {
               <button
                 key={r}
                 onClick={() => { setRoleFilter(r); setPage(1); }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${
-                  roleFilter === r
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${roleFilter === r
                     ? r === "all"
                       ? "bg-zinc-700 border-zinc-600 text-zinc-100"
                       : `${cfg?.badge} border-current`
                     : "bg-zinc-900 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
-                }`}
+                  }`}
               >
                 {Icon && <Icon className="w-3 h-3" />}
                 {r === "all" ? "All" : cfg?.label}
@@ -233,9 +186,9 @@ export default function User() {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-zinc-400 text-sm">{user.phone}</TableCell>
-                      <TableCell className="text-zinc-400 text-sm">{user.dob}</TableCell>
-                      <TableCell className="text-zinc-400 text-sm">{user.address}</TableCell>
+                      <TableCell className="text-zinc-400 text-sm">{user.phone??'-'}</TableCell>
+                      <TableCell className="text-zinc-400 text-sm">{user.dob??'-'}</TableCell>
+                      <TableCell className="text-zinc-400 text-sm">{user.address??'-'}</TableCell>
                       <TableCell>
                         <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium ${cfg.badge}`}>
                           <Icon className="w-3 h-3" />
@@ -291,7 +244,7 @@ export default function User() {
       </div>
 
       {/* Create / Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      {/* <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="bg-zinc-900 border-zinc-800 text-zinc-100 sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-base font-semibold">
@@ -376,10 +329,11 @@ export default function User() {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
+      <CreateEditUser dialogOpen={dialogOpen} setDialogOpen={setDialogOpen} id={selectedUser?.id??''} />
 
       {/* Delete Confirm */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      {/* <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="bg-zinc-900 border-zinc-800 text-zinc-100 sm:max-w-sm">
           <DialogHeader>
             <DialogTitle className="text-base font-semibold">Delete User</DialogTitle>
@@ -392,7 +346,8 @@ export default function User() {
             <Button onClick={handleDelete} className="bg-red-600 hover:bg-red-500 text-white h-8 text-sm">Delete</Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
+      <DeleteUser deleteDialogOpen={deleteDialogOpen} setDeleteDialogOpen={setDeleteDialogOpen} id={selectedUser?.id} />
     </div>
   );
 }

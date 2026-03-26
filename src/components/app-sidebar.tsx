@@ -11,7 +11,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { LayoutDashboardIcon, Music2Icon, MicVocalIcon, UsersIcon,CommandIcon } from "lucide-react"
+import { LayoutDashboardIcon, Music2Icon, MicVocalIcon, UsersIcon, CommandIcon } from "lucide-react"
 import { ROUTES } from "@/routes/routeConstant"
 import { useGetMe } from "@/app/user/hooks/user"
 const RoleConstant = {
@@ -22,50 +22,58 @@ const RoleConstant = {
 
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const {data:User}=useGetMe();
-  const userRole=User?.role;
+  const { data: User } = useGetMe();
+  const userRole = User?.role;
   console.log(userRole);
   const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  navMain: [
-    {
-      title: "Dashboard",
-      url: ROUTES.DASHBOARD,
-      icon: <LayoutDashboardIcon />,
-      // visible to all roles
-      visible: true,
+    user: {
+      name: "shadcn",
+      email: "m@example.com",
+      avatar: "/avatars/shadcn.jpg",
     },
+    navMain: [
+      {
+        title: "Dashboard",
+        url: ROUTES.DASHBOARD,
+        icon: <LayoutDashboardIcon />,
+        // visible to all roles
+        visible: true,
+        isActive: location.pathname === ROUTES.DASHBOARD,
 
-    {
-      title: "Artists",
-      url: ROUTES.ARTISTS,
-      icon: <MicVocalIcon />,
-      // super_admin (read) + artist_manager (full CRUD)
-      visible: [RoleConstant.Super_Admin, RoleConstant.Artist_Manager].includes(userRole),
-    },
-    {
-      title: "Songs",
-      url: ROUTES.SONGS,
-      icon: <Music2Icon />,
-      // all roles can see songs
-      visible: [RoleConstant.Super_Admin, RoleConstant.Artist].includes(userRole),
-    },
-    {
-      title: "Users",
-      url: ROUTES.USERS,
-      icon: <UsersIcon />,
-      // only super_admin can manage users
-        visible:userRole===RoleConstant.Super_Admin,
-      // badge: role === "super_admin" ? "Admin" : undefined,
-    },
+      },
 
-  ],
-}
-const filteredNavMain = data.navMain.filter((item) => item.visible === true);
+      {
+        title: "Artists",
+        url: ROUTES.ARTISTS,
+        icon: <MicVocalIcon />,
+        // super_admin (read) + artist_manager (full CRUD)
+        visible: [RoleConstant.Super_Admin, RoleConstant.Artist_Manager].includes(userRole),
+        isActive: location.pathname.startsWith(ROUTES.ARTISTS),
+
+      },
+      {
+        title: "Songs",
+        url: ROUTES.SONGS,
+        icon: <Music2Icon />,
+        // all roles can see songs
+        visible: [RoleConstant.Super_Admin, RoleConstant.Artist].includes(userRole),
+        isActive: location.pathname.startsWith(ROUTES.SONGS),
+
+      },
+      {
+        title: "Users",
+        url: ROUTES.USERS,
+        icon: <UsersIcon />,
+        // only super_admin can manage users
+        visible: userRole === RoleConstant.Super_Admin,
+        isActive: location.pathname.startsWith(ROUTES.USERS),
+
+        // badge: role === "super_admin" ? "Admin" : undefined,
+      },
+
+    ],
+  }
+  const filteredNavMain = data.navMain.filter((item) => item.visible === true);
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>

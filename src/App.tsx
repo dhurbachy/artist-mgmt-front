@@ -12,7 +12,7 @@ import {
 import { OpenAPI } from "@/services/artist-services/core/OpenAPI";
 import "./services/apiInterceptor";
 OpenAPI.TOKEN = async () => localStorage.getItem("access_token") ?? "";
-
+// import { AuthProvider } from './context/authContext';
 const queryClient = new QueryClient()
 
 
@@ -21,10 +21,13 @@ function App() {
   return (
     <>
       <QueryClientProvider client={queryClient}>
+       {/* <AuthProvider> */}
 
+       
         <BrowserRouter>
           <RouteMain />
         </BrowserRouter>
+        {/* </AuthProvider> */}
       </QueryClientProvider>
     </>
   )
