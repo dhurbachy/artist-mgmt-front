@@ -59,14 +59,30 @@ export const useDeleteArtist = () => {
   });
 };
 
-// POST /api/artist/import-csv
-export const useImportArtistsCsv = () => {
+// hooks/artist.ts
+
+export const useImportArtists = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () =>
-      ArtistService.artistControllerImportCsv(),
+    mutationFn: (file: File) =>
+      ArtistService.artistControllerImportCsv({ file }), 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["artists"] });
+      queryClient.invalidateQueries({ queryKey: ['artists'] });
+    },
+  });
+};
+
+export const useExportArtists = () => {
+  return useMutation({
+    mutationFn: async () => {
+      const csvBlob = await ArtistService.artistControllerExportCsv();
+
+      const url = URL.createObjectURL(new Blob([csvBlob], { type: 'text/csv' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `artists_${Date.now()}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
     },
   });
 };
