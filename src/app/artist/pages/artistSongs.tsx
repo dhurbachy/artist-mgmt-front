@@ -1,16 +1,35 @@
 import { useParams, useNavigate } from "react-router";
 import { useGetAllSongs } from "@/app/song/hooks/song";
+import { useGetArtist } from "../hooks/artist";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+    Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import {Music2,
+import { Button } from "@/components/ui/button";
+
+import {
+    ChevronRight,
+    Music2, ChevronLeft,
     ArrowLeft, Headphones,
 } from "lucide-react";
+import { useState } from "react";
 export default function ArtistSongs() {
     const navigate = useNavigate();
+    const [page, setPage] = useState<number>(1);
+    const limit=10;
     const { artistId } = useParams();
-    const { data: songs,isLoading } = useGetAllSongs(artistId ?? '');
-    console.log(songs);
+        const {data:artist}=useGetArtist(artistId??'');
+        console.log(artist)
+
+    const { data: songsResponse, isLoading } = useGetAllSongs(
+        artistId ?? '',
+        page,
+        limit
+    );
+
+    const songs = songsResponse?.data ?? [];
+    const totalItems = songsResponse?.total ?? 0;
+    const totalPages = Math.ceil(totalItems / limit);
+
     return (
         <>
             <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans">
@@ -31,7 +50,7 @@ export default function ArtistSongs() {
                                     <h4 className="text-lg font-semibold tracking-tight text-zinc-100">Songs</h4>
                                     <span className="text-zinc-600 text-xs">—</span>
                                     <span className="text-sm text-zinc-400">
-                                        {/* {artists.find((item:any)=>item.id===selectedArtist)?.name??'Loading ...'} */}
+                                        {artist?.name}
                                     </span>
                                 </div>
                                 <p className="text-xs text-zinc-500">{songs?.total} tracks in collection</p>
@@ -40,6 +59,7 @@ export default function ArtistSongs() {
 
                     </div>
                 </div>
+                {/* Table */}
                 <div className="rounded-xl border border-zinc-800 overflow-hidden bg-zinc-900/40">
                     <Table>
                         <TableHeader>
@@ -61,7 +81,7 @@ export default function ArtistSongs() {
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                songs?.data.map((song, idx) => {
+                                songs?.map((song) => {
                                     return (
                                         <TableRow key={song.id} className="border-zinc-800/60 hover:bg-zinc-800/40 transition-colors group">
                                             <TableCell className="py-3 px-4 text-zinc-600 text-sm font-mono">
@@ -79,7 +99,7 @@ export default function ArtistSongs() {
                                             <TableCell>
                                                 <span className={`inline-flex px-2.5 py-0.5 rounded-full border text-xs font-medium 
                                                     `}
-                                                    >
+                                                >
                                                     {/* {cfg.label} */}
                                                 </span>
                                             </TableCell>
@@ -90,7 +110,7 @@ export default function ArtistSongs() {
                                                 {new Date(song.updated_at).toLocaleDateString()}
                                             </TableCell>
                                             <TableCell>
-                                               
+
                                             </TableCell>
                                         </TableRow>
                                     );
@@ -99,6 +119,32 @@ export default function ArtistSongs() {
                         </TableBody>
                     </Table>
                 </div>
+                {/* Pagination */}
+                <div className="flex items-center justify-between text-xs text-zinc-500 py-5 px-5">
+                    <span>
+                        Showing {totalItems === 0 ? 0 : (page - 1) * limit + 1}–
+                        {Math.min(page * limit, totalItems)} of {totalItems}
+                    </span>
+                    <div className="flex items-center gap-1">
+                        <Button variant="ghost" size="icon" disabled={page === 1||isLoading}
+                            onClick={() => setPage((p) => p - 1)}
+                            className="h-7 w-7 text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800 disabled:opacity-30">
+                            <ChevronLeft className="w-4 h-4" />
+                        </Button>
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                            <Button key={p} variant="ghost" size="sm" onClick={() => setPage(p)}
+                                className={`h-7 w-7 text-xs ${page === p ? "bg-rose-600 text-white hover:bg-rose-500" : "text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800"}`}>
+                                {p}
+                            </Button>
+                        ))}
+                        <Button variant="ghost" size="icon" disabled={page === totalPages||totalPages===0||isLoading}
+                            onClick={() => setPage((p) => p + 1)}
+                            className="h-7 w-7 text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800 disabled:opacity-30">
+                            <ChevronRight className="w-4 h-4" />
+                        </Button>
+                    </div>
+                </div>
+
             </div>
         </>
     )
