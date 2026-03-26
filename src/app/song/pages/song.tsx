@@ -8,6 +8,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
   MoreHorizontal, Plus, Search, ChevronLeft, ChevronRight,
   Music2, ArrowLeft, Headphones,
 } from "lucide-react";
@@ -31,11 +38,11 @@ interface Song {
 const GENRES: Genre[] = ["rnb", "country", "classic", "rock", "jazz"];
 
 const genreConfig: Record<Genre, { label: string; badge: string }> = {
-  rnb:     { label: "R&B",     badge: "bg-pink-500/10 text-pink-400 border-pink-500/20" },
+  rnb: { label: "R&B", badge: "bg-pink-500/10 text-pink-400 border-pink-500/20" },
   country: { label: "Country", badge: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
   classic: { label: "Classic", badge: "bg-violet-500/10 text-violet-400 border-violet-500/20" },
-  rock:    { label: "Rock",    badge: "bg-red-500/10 text-red-400 border-red-500/20" },
-  jazz:    { label: "Jazz",    badge: "bg-sky-500/10 text-sky-400 border-sky-500/20" },
+  rock: { label: "Rock", badge: "bg-red-500/10 text-red-400 border-red-500/20" },
+  jazz: { label: "Jazz", badge: "bg-sky-500/10 text-sky-400 border-sky-500/20" },
 };
 
 export default function Song() {
@@ -48,14 +55,15 @@ export default function Song() {
 
   const PAGE_SIZE = 4;
 
-  // ✅ Step 1: Get all artists, pick the first one
-  const { data: artistsResponse } = useGetArtists(1, 100);
+  const { data: artistsResponse } = useGetArtists();
   const artists = artistsResponse?.data ?? [];
   const firstArtist = artists[0] ?? null;
+  const [selectedArtist, setSelectedArtist] = useState<string | null>(artists[0]?.id??null);
 
-  // ✅ Step 2: Fetch songs for that first artist
+const activeArtistId = selectedArtist ?? artists[0]?.id ?? "";
+
   const { data: songsResponse, isLoading } = useGetAllSongs(
-    firstArtist?.id ?? "",
+    activeArtistId ?? "",
     page,
     PAGE_SIZE,
   );
@@ -64,7 +72,6 @@ export default function Song() {
   const total: number = songsResponse?.total ?? 0;
   const totalPages: number = songsResponse?.lastPage ?? 1;
 
-  // Client-side filter (search + genre) on current page
   const filtered = songs.filter((s) => {
     const matchSearch =
       s.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -103,9 +110,8 @@ export default function Song() {
               <div className="flex items-center gap-2">
                 <h4 className="text-lg font-semibold tracking-tight text-zinc-100">Songs</h4>
                 <span className="text-zinc-600 text-xs">—</span>
-                {/* ✅ Show first artist name */}
                 <span className="text-sm text-zinc-400">
-                  {firstArtist?.name ?? "Loading..."}
+                  {artists.find((item:any)=>item.id===selectedArtist)?.name??'Loading ...'}
                 </span>
               </div>
               <p className="text-xs text-zinc-500">{total} tracks in collection</p>
@@ -125,11 +131,10 @@ export default function Song() {
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => { setGenreFilter("all"); setPage(1); }}
-            className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${
-              genreFilter === "all"
-                ? "bg-zinc-700 border-zinc-600 text-zinc-100"
-                : "bg-zinc-900 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
-            }`}
+            className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${genreFilter === "all"
+              ? "bg-zinc-700 border-zinc-600 text-zinc-100"
+              : "bg-zinc-900 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
+              }`}
           >
             All <span className="opacity-60">{genreCounts.all}</span>
           </button>
@@ -137,11 +142,10 @@ export default function Song() {
             const cfg = genreConfig[g];
             return (
               <button key={g} onClick={() => { setGenreFilter(g); setPage(1); }}
-                className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${
-                  genreFilter === g
-                    ? `${cfg.badge} border-current`
-                    : "bg-zinc-900 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
-                }`}
+                className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${genreFilter === g
+                  ? `${cfg.badge} border-current`
+                  : "bg-zinc-900 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
+                  }`}
               >
                 {cfg.label} <span className="opacity-60">{genreCounts[g] || 0}</span>
               </button>
@@ -150,14 +154,32 @@ export default function Song() {
         </div>
 
         {/* Search */}
-        <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-          <Input
-            placeholder="Search songs or albums..."
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="pl-9 bg-zinc-900 border-zinc-800 text-zinc-100 placeholder:text-zinc-600 h-9 text-sm focus:border-rose-500"
-          />
+        <div className="grid grid-cols-2 gap-2">
+
+
+          <div className="relative max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+            <Input
+              placeholder="Search songs or albums..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              className="pl-9 bg-zinc-900 border-zinc-800 text-zinc-100 placeholder:text-zinc-600 h-9 text-sm focus:border-rose-500"
+            />
+
+          </div>
+          <div className="relative max-w-sm">
+            <Select onValueChange={(value) => { setSelectedArtist(value); console.log(value) }}>
+              <SelectTrigger className="w-[180px] bg-zinc-900 border-zinc-800 text-zinc-100 h-9 text-sm focus:ring-rose-500">
+                <SelectValue placeholder="Filter by Artist" />
+              </SelectTrigger>
+              <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-100">
+                {artists.map((item: any) => (
+                  <SelectItem value={item.id}>{item?.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+          </div>
         </div>
 
         {/* Table */}
@@ -269,7 +291,6 @@ export default function Song() {
         </div>
       </div>
 
-      {/* ✅ Pass first artist's id */}
       <CreateEditSong
         dialogOpen={dialogOpen}
         setDialogOpen={setDialogOpen}
@@ -282,7 +303,7 @@ export default function Song() {
         setDeleteDialogOpen={setDeleteDialogOpen}
         artistId={firstArtist?.id ?? null}
         songId={selectedSong?.id ?? null}
-        songTitle={selectedSong?.title??null}
+        songTitle={selectedSong?.title ?? null}
       />
     </div>
   );
