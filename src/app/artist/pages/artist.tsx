@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useGetArtists } from "../hooks/artist"
+import { useState, useRef } from "react";
+import { useGetArtists, useImportArtists, useExportArtists } from "../hooks/artist"
 import {
   Table,
   TableBody,
@@ -58,23 +58,23 @@ const genderColor: Record<Gender, string> = {
 
 
 export default function Artist() {
-  const navigate=useNavigate();
-    const [page, setPage] = useState(1);
-  const { data: artistsResponse } = useGetArtists(page,10);
+  const navigate = useNavigate();
+  const [page, setPage] = useState(1);
+  const { data: artistsResponse } = useGetArtists(page, 10);
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
-  const limit=10;
+  const limit = 10;
   const openCreate = () => {
     setSelectedArtist(null);
-   
+
     setDialogOpen(true);
   };
 
   const openEdit = (artist: Artist) => {
     setSelectedArtist(artist);
-   
+
     setDialogOpen(true);
   };
 
@@ -83,22 +83,34 @@ export default function Artist() {
     setDeleteDialogOpen(true);
   };
 
-  const handleCSVExport = () => {
-    const headers = "id,name,dob,gender,address,first_release_year,no_of_albums_released";
-    const rows = artists.map((a) =>
-      `${a.id},"${a.name}",${a.dob},${a.gender},"${a.address}",${a.first_release_year},${a.no_of_albums_released}`
-    );
-    const blob = new Blob([[headers, ...rows].join("\n")], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "artists.csv";
-    link.click();
-  };
+  // const handleCSVExport = () => {
+  //   const headers = "id,name,dob,gender,address,first_release_year,no_of_albums_released";
+  //   const rows = artists.map((a) =>
+  //     `${a.id},"${a.name}",${a.dob},${a.gender},"${a.address}",${a.first_release_year},${a.no_of_albums_released}`
+  //   );
+  //   const blob = new Blob([[headers, ...rows].join("\n")], { type: "text/csv" });
+  //   const url = URL.createObjectURL(blob);
+  //   const link = document.createElement("a");
+  //   link.href = url;
+  //   link.download = "artists.csv";
+  //   link.click();
+  // };
   const artists = artistsResponse?.data ?? [];
-    const totalItems = artistsResponse?.total ?? 0;
-    const totalPages = Math.ceil(totalItems / limit);
+  const totalItems = artistsResponse?.total ?? 0;
+  const totalPages = Math.ceil(totalItems / limit);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { mutate: importCsv, isPending: importing } = useImportArtists();
+  const { mutate: exportCsv, isPending: exporting } = useExportArtists();
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    importCsv(file, {
+      // onSuccess: (res) => toast.success(`Imported ${res.imported} artists`),
+      // onError: () => toast.error('Import failed. Check your CSV format.'),
+    });
+    e.target.value = '';
+  };
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans">
       {/* Header */}
@@ -110,24 +122,28 @@ export default function Artist() {
             </div>
             <div>
               <h5 className="text-lg font-semibold tracking-tight text-zinc-100">Artists</h5>
-              <p className="text-xs text-zinc-500">{artists?.total} total records</p>
+              <p className="text-xs text-zinc-500">{totalItems} total records</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCSVExport}
+              variant="ghost" size="sm"
+              onClick={() => exportCsv()}
+              disabled={exporting}
               className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 gap-2 h-8 text-xs"
             >
-              <Download className="w-3.5 h-3.5" /> Export CSV
+              <Download className="w-3.5 h-3.5" />
+              {exporting ? 'Exporting...' : 'Export CSV'}
             </Button>
+            <input ref={fileInputRef} type="file" accept=".csv" className="hidden" onChange={handleFileChange} />
             <Button
-              variant="ghost"
-              size="sm"
+              variant="ghost" size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={importing}
               className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 gap-2 h-8 text-xs"
             >
-              <Upload className="w-3.5 h-3.5" /> Import CSV
+              <Upload className="w-3.5 h-3.5" />
+              {importing ? 'Importing...' : 'Import CSV'}
             </Button>
             <Button
               size="sm"
@@ -201,7 +217,7 @@ export default function Artist() {
                         variant="ghost"
                         size="sm"
                         className="h-7 px-2.5 text-xs gap-1.5 text-violet-400 hover:text-violet-300 hover:bg-violet-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={()=>{navigate(ROUTES.ARTIST_SONGS.replace(':artistId', artist.id))}}
+                        onClick={() => { navigate(ROUTES.ARTIST_SONGS.replace(':artistId', artist.id)) }}
                       >
                         <Music className="w-3 h-3" /> View Songs
                       </Button>
@@ -251,8 +267,8 @@ export default function Artist() {
                 variant="ghost" size="sm"
                 onClick={() => setPage(p)}
                 className={`h-7 w-7 text-xs ${page === p
-                    ? "bg-violet-600 text-white hover:bg-violet-500"
-                    : "text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800"
+                  ? "bg-violet-600 text-white hover:bg-violet-500"
+                  : "text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800"
                   }`}
               >
                 {p}
@@ -272,8 +288,8 @@ export default function Artist() {
       </div>
 
 
-      <CreateArtist open={dialogOpen} onOpenChange={setDialogOpen} artistId={selectedArtist?.id??''} />
-      <DeleteArtist deleteDialogOpen={deleteDialogOpen} setDeleteDialogOpen={setDeleteDialogOpen} artistId={selectedArtist?.id??''} />
+      <CreateArtist open={dialogOpen} onOpenChange={setDialogOpen} artistId={selectedArtist?.id ?? ''} />
+      <DeleteArtist deleteDialogOpen={deleteDialogOpen} setDeleteDialogOpen={setDeleteDialogOpen} artistId={selectedArtist?.id ?? ''} />
     </div>
   );
 }
