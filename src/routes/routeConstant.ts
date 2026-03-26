@@ -3,10 +3,12 @@ export const ROUTES = {
     LOGIN: '/login',
     DASHBOARD: '/dashboard',
     REGISTER: '/register',
-    ARTISTS:'/artists',
-    USERS:'/users',
-    SONGS:'/songs',
-    NOTFOUND:'/not-found',
-    FORBIDDEN:'/forbidden'
+    ARTISTS: '/artists',
+    USERS: '/users',
+    SONGS: '/songs',
+    NOTFOUND: '/not-found',
+    FORBIDDEN: '/forbidden',
+    ARTIST_SONGS: '/artists/:artistId/songs',
+
 
 }

@@ -8,6 +8,7 @@ const Song=lazy(()=>import('../app/song/pages/song'));
 const Register=lazy(()=>import('../app/auth/pages/register'));
 const ForBidden=lazy(()=>import('../utils/forbidden'));
 const Home=lazy(()=>import('../app/dashboard/home'));
+const ArtistSongs=lazy(()=>import('../app/artist/pages/artistSongs'))
 export const RouteList=[
     {
     path: ROUTES.HOME,
@@ -39,6 +40,12 @@ export const RouteList=[
      protected: true,
     roles: [RoleConstant.Super_Admin,RoleConstant.Artist_Manager]
   },{
+    path:ROUTES.ARTIST_SONGS,
+    element:<ArtistSongs />,
+    protected:true,
+    roles:[RoleConstant.Super_Admin,RoleConstant.Artist_Manager]
+  },
+  {
     path:ROUTES.SONGS,
     element:<Song />,
      protected: true,
