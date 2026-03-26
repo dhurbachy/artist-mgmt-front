@@ -84,6 +84,7 @@ export default function CreateEditUser({ dialogOpen, setDialogOpen, id }: Create
 
     const handleSave = () => {
         if (!validate()) return;
+        console.log(form,'Form');
 
         if (isEdit) {
             const { password, ...updateData } = form;

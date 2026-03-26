@@ -34,7 +34,7 @@ export const useDeleteUser = () => {
         mutationKey: ['deleteUser'],
         mutationFn: (id: string) => UsersService.userControllerRemove(id),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["artists"] });
+            queryClient.invalidateQueries({ queryKey: ["allUser"] });
 
         }
     })
@@ -59,9 +59,9 @@ export const useUpdateUser = () => {
         mutationKey: ['updateUser'],
         mutationFn: ({ id, data }: { id: string; data: UpdateUserDto }) =>
             UsersService.userControllerUpdate(id, data),
-        onSuccess: (_, variables) => {
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['allUser'] });
-            queryClient.invalidateQueries({ queryKey: ['allUser', variables.id] });
+            // queryClient.invalidateQueries({ queryKey: ['allUser', variables.id] });
         }
     });
 };
