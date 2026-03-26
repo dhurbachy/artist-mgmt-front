@@ -26,6 +26,8 @@ import {
   Music,
   User,
   Disc,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 
 import CreateArtist from "../components/createArtist";
@@ -57,15 +59,13 @@ const genderColor: Record<Gender, string> = {
 
 export default function Artist() {
   const navigate=useNavigate();
-  const { data: artists } = useGetArtists();
-  console.log(artists);
-
+    const [page, setPage] = useState(1);
+  const { data: artistsResponse } = useGetArtists(page,10);
   const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
-
+  const limit=10;
   const openCreate = () => {
     setSelectedArtist(null);
    
@@ -95,6 +95,9 @@ export default function Artist() {
     link.download = "artists.csv";
     link.click();
   };
+  const artists = artistsResponse?.data ?? [];
+    const totalItems = artistsResponse?.total ?? 0;
+    const totalPages = Math.ceil(totalItems / limit);
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans">
@@ -166,7 +169,7 @@ export default function Artist() {
             </TableHeader>
             <TableBody>
               {
-                artists?.data?.map((artist: any) => (
+                artists?.map((artist: any) => (
                   <TableRow
                     key={artist.id}
                     className="border-zinc-800/60 hover:bg-zinc-800/40 transition-colors group"
@@ -228,9 +231,9 @@ export default function Artist() {
         </div>
 
         {/* Pagination */}
-        {/* <div className="flex items-center justify-between text-xs text-zinc-500">
+        <div className="flex items-center justify-between text-xs text-zinc-500">
           <span>
-            Showing {artists?.total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} of {artists?.total}
+            Showing {totalItems === 0 ? 0 : (page - 1) * limit + 1}–{Math.min(page * limit, totalItems)} of {totalItems}
           </span>
           <div className="flex items-center gap-1">
             <Button
@@ -265,7 +268,7 @@ export default function Artist() {
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
-        </div> */}
+        </div>
       </div>
 
 

@@ -6,7 +6,7 @@ import { UpdateArtistDto } from "@/services/artist-services/models/UpdateArtistD
 // GET /api/artist
 export const useGetArtists = (page: number = 1, limit: number = 10) => {
   return useQuery({
-    queryKey: ["artists", page, limit], // ✅ page & limit in key for caching per page
+    queryKey: ["artists", page, limit],
     queryFn: () => ArtistService.artistControllerFindAll(page, limit),
     staleTime: 5 * 60 * 1000,
   });
