@@ -30,6 +30,8 @@ import {
 
 import CreateArtist from "../components/createArtist";
 import DeleteArtist from "../components/deleteArtist";
+import { ROUTES } from "@/routes/routeConstant";
+import { useNavigate } from "react-router";
 const GENDERS = ["m", "f", "o"] as const;
 type Gender = (typeof GENDERS)[number];
 
@@ -51,12 +53,10 @@ const genderColor: Record<Gender, string> = {
   o: "bg-amber-100 text-amber-700 border-amber-200",
 };
 
-const EMPTY_FORM = {
-  name: "", dob: "", gender: "m" as Gender,
-  address: "", first_release_year: new Date().getFullYear(), no_of_albums_released: 0,
-};
+
 
 export default function Artist() {
+  const navigate=useNavigate();
   const { data: artists } = useGetArtists();
   console.log(artists);
 
@@ -65,34 +65,22 @@ export default function Artist() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
-  const [form, setForm] = useState(EMPTY_FORM);
-  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const openCreate = () => {
     setSelectedArtist(null);
-    setForm(EMPTY_FORM);
-    setErrors({});
+   
     setDialogOpen(true);
   };
 
   const openEdit = (artist: Artist) => {
     setSelectedArtist(artist);
-    setForm({
-      name: artist.name, dob: artist.dob, gender: artist.gender,
-      address: artist.address, first_release_year: artist.first_release_year,
-      no_of_albums_released: artist.no_of_albums_released,
-    });
-    setErrors({});
+   
     setDialogOpen(true);
   };
 
   const openDelete = (artist: Artist) => {
     setSelectedArtist(artist);
     setDeleteDialogOpen(true);
-  };
-
-  const handleDelete = () => {
-    setDeleteDialogOpen(false);
   };
 
   const handleCSVExport = () => {
@@ -210,6 +198,7 @@ export default function Artist() {
                         variant="ghost"
                         size="sm"
                         className="h-7 px-2.5 text-xs gap-1.5 text-violet-400 hover:text-violet-300 hover:bg-violet-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={()=>{navigate(ROUTES.ARTIST_SONGS.replace(':artistId', artist.id))}}
                       >
                         <Music className="w-3 h-3" /> View Songs
                       </Button>
