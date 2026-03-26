@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { AuthService, } from "@/services/artist-services";
+import { AuthService,UsersService } from "@/services/artist-services";
 
 export const useGetMe=()=>{
 
@@ -10,9 +10,9 @@ export const useGetMe=()=>{
     })
 }
 
-// export const useGetUsers=()=>{
-//     return useQuery({
-//         queryKey:['allUser'],
-//         queryFn:()=>
-//     })
-// }
+export const useGetUsers=(page: number = 1, limit: number = 10)=>{
+    return useQuery({
+        queryKey:['allUser',page,limit],
+        queryFn:()=>UsersService.userControllerFindAll(page,limit),
+    })
+}
