@@ -9,6 +9,33 @@ import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class ArtistService {
     /**
+     * @returns any
+     * @throws ApiError
+     */
+    public static artistControllerExportCsv(): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/artist/export-csv',
+        });
+    }
+    /**
+     * @param formData
+     * @returns any
+     * @throws ApiError
+     */
+    public static artistControllerImportCsv(
+        formData: {
+            file?: Blob;
+        },
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/artist/import-csv',
+            formData: formData,
+            mediaType: 'multipart/form-data',
+        });
+    }
+    /**
      * @param requestBody
      * @returns any
      * @throws ApiError
@@ -92,16 +119,6 @@ export class ArtistService {
             path: {
                 'id': id,
             },
-        });
-    }
-    /**
-     * @returns any
-     * @throws ApiError
-     */
-    public static artistControllerImportCsv(): CancelablePromise<any> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/artist/import-csv',
         });
     }
 }
