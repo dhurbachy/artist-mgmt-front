@@ -188,7 +188,7 @@ export default function Song() {
               itemToStringValue={(selectValue) => selectValue.label}
               onValueChange={(selectValue)=>setSelectedArtist(selectValue.value)}
             >
-              <ComboboxInput placeholder="Select a framework" />
+              <ComboboxInput placeholder="Select a Artist" />
               <ComboboxContent>
                 <ComboboxEmpty>No items found.</ComboboxEmpty>
                 <ComboboxList>
