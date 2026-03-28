@@ -216,7 +216,7 @@ export default function Artist() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-7 px-2.5 text-xs gap-1.5 text-violet-400 hover:text-violet-300 hover:bg-violet-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="h-7 px-2.5 text-xs gap-1.5 text-violet-400 hover:text-violet-300 hover:bg-violet-500/10 opacity-100 group-hover:opacity-100 transition-opacity"
                         onClick={() => { navigate(ROUTES.ARTIST_SONGS.replace(':artistId', artist.id)) }}
                       >
                         <Music className="w-3 h-3" /> View Songs
