@@ -9,7 +9,7 @@ export default function ProtectedRoute({
 }) {
   //  const isAuthenticated=true;
   const isAuthenticated = !!localStorage.getItem("access_token");
-  const { data: user } = useGetMe();
+  const { data: user,isLoading } = useGetMe();
   const currentRoute = RouteList.find(r => r.path === location.pathname);
 
 
@@ -29,6 +29,9 @@ export default function ProtectedRoute({
     // );
     return <Navigate to="/login" replace />
 
+  }
+  if(isLoading) {
+    return <><div>Loading ...</div></>;
   }
   if (currentRoute?.roles && !currentRoute?.roles.includes(user?.role)) {
     return <Navigate to="/forbidden" replace />;

@@ -17,6 +17,9 @@ export default function RouteMain() {
                 </div>
             }>
                 <Routes>
+                     {authRoutes.map((route) => (
+                        <Route key={route.path} path={route.path} element={route.element} />
+                    ))}
                     <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
                         {appRoutes.map((route) => (
                             <Route
@@ -28,9 +31,7 @@ export default function RouteMain() {
                         <Route path="*" element={<NotFound />} />
                     </Route>
 
-                    {authRoutes.map((route) => (
-                        <Route key={route.path} path={route.path} element={route.element} />
-                    ))}
+                   
 
                     {/* Catch-all 404 */}
                     <Route path="*" element={<Forbidden />} />
