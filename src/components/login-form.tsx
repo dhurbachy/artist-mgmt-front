@@ -12,7 +12,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { useLogin } from "@/app/auth/hooks/auth" 
 import { Link, useNavigate } from "react-router"
-import {ROUTES} from "../routes/routeConstant"
+import {ROUTES} from "../routes/routeConstant";
+
 export function LoginForm({
   className,
   ...props
@@ -28,12 +29,8 @@ export function LoginForm({
     login(
       { email, password },
       {
-        onSuccess: (data) => {
-          // router.push("/dashboard") // redirect after login
-          const token = data.accessToken;
-          if (token) {
-            localStorage.setItem("access_token", token); // Save token
-          }
+        onSuccess: () => {
+          
           navigate(ROUTES.DASHBOARD);
 
         },

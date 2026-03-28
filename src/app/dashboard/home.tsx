@@ -1,8 +1,11 @@
 import { Navigate } from "react-router";
 import { ROUTES } from "@/routes/routeConstant";
+import {useAuth} from "@/context/authContext";
 
 export default function Home() {
-  const isAuthenticated = !!localStorage.getItem("access_token");
+      const {accessToken}=useAuth();
+
+  const isAuthenticated = !!accessToken;
 
   if (isAuthenticated) {
     return <Navigate to={ROUTES.DASHBOARD} replace />;

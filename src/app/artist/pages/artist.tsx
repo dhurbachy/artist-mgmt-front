@@ -29,7 +29,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from "lucide-react";
-
+import {useAuth} from "@/context/authContext";
 import CreateArtist from "../components/createArtist";
 import DeleteArtist from "../components/deleteArtist";
 import { ROUTES } from "@/routes/routeConstant";
@@ -58,6 +58,7 @@ const genderColor: Record<Gender, string> = {
 
 
 export default function Artist() {
+  const {accessToken}=useAuth();
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const { data: artistsResponse } = useGetArtists(page, 10);
@@ -113,6 +114,7 @@ export default function Artist() {
   };
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans">
+      
       {/* Header */}
       <div className="border-b border-zinc-800 bg-zinc-900/60 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">

@@ -1,7 +1,9 @@
 import { LoginForm } from "@/components/login-form"
 import { Navigate } from "react-router";
+import {useAuth} from "@/context/authContext";
 export default function Login() {
-    const isAuthenticated = !!localStorage.getItem("access_token");
+    const {accessToken}=useAuth();
+    const isAuthenticated = !!accessToken;
     if (isAuthenticated) {
         return <Navigate to="/dashboard" replace />;
     }

@@ -19,13 +19,12 @@ const refreshAccessToken = async (): Promise<string> => {
     refreshPromise = AuthService.authControllerRefresh()
         .then((data) => {
             const newToken = data.access_token;
-            // ✅ Update both localStorage AND OpenAPI.TOKEN
-            localStorage.setItem("access_token", newToken);
+            // localStorage.setItem("access_token", newToken);
             OpenAPI.TOKEN = newToken;
             return newToken;
         })
         .catch((err) => {
-            localStorage.removeItem("access_token");
+            // localStorage.removeItem("access_token");
             OpenAPI.TOKEN = undefined;
             window.location.href = "/login";
             throw err;

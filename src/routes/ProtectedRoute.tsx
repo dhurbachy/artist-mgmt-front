@@ -2,13 +2,15 @@ import { useGetMe } from "@/app/user/hooks/user";
 import Forbidden from "@/utils/forbidden";
 import { Navigate } from "react-router";
 import { RouteList } from "./routes";
+import {useAuth} from "@/context/authContext";
 export default function ProtectedRoute({
   children
 }: {
   children: React.ReactNode;
 }) {
   //  const isAuthenticated=true;
-  const isAuthenticated = !!localStorage.getItem("access_token");
+  const {accessToken}=useAuth();
+  const isAuthenticated = !!accessToken;
   const { data: user,isLoading } = useGetMe();
   const currentRoute = RouteList.find(r => r.path === location.pathname);
 
