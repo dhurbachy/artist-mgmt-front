@@ -20,12 +20,14 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
   // const router = useRouter()
   const { mutate: login, isPending, isError, error } = useLogin()
+   const [errors, setErrors] = useState<Record<string, string>>({});
  const navigate=useNavigate();
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
+     if (!validate()) return;
     login(
       { email, password },
       {
@@ -38,11 +40,29 @@ export function LoginForm({
     )
   }
 
+   const validate = () => {
+    const newErrors: Record<string, string> = {};
+    if (!email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = "Please enter a valid email";
+    }
+    
+    if (!password) {
+      newErrors.password = "Password is required";
+    } else if (password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0">
         <CardContent className="grid p-0 md:grid-cols-1">
-          <form className="p-6 md:p-8" onSubmit={handleSubmit}>
+          <form className="p-6 md:p-8" onSubmit={handleSubmit} noValidate>
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
                 <h4 className="text-2xl font-bold">Welcome back</h4>
@@ -52,9 +72,10 @@ export function LoginForm({
               </div>
 
               {/* Error banner */}
-              {isError && (
-                <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive text-center">
-                  {(error as any)?.response?.data?.message ?? "Invalid email or password."}
+              
+               {(isError || errors.server) && (
+                <p className="rounded-md bg-red-500/10 px-3 py-2 text-xs text-red-400 text-center border border-red-500/20">
+                  {errors.server || (error as any)?.response?.data?.message || "Login failed."}
                 </p>
               )}
 
@@ -69,17 +90,18 @@ export function LoginForm({
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={isPending}
                 />
+                {errors.email && <p className="text-xs text-red-400 text-left">{errors.email}</p>}
               </Field>
 
               <Field>
                 <div className="flex items-center">
                   <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <a
+                  {/* <a
                     href="#"
                     className="ml-auto text-sm underline-offset-2 hover:underline"
                   >
                     Forgot your password?
-                  </a>
+                  </a> */}
                 </div>
                 <Input
                   id="password"
@@ -89,6 +111,7 @@ export function LoginForm({
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isPending}
                 />
+                {errors.password && <p className="text-xs text-red-400 text-left">{errors.password}</p>}
               </Field>
 
               <Field>
