@@ -69,8 +69,10 @@ export default function CreateEditSong({
 
     const validate = () => {
         const newErrors: Record<string, string> = {};
+         if (!form.artist_id) newErrors.artist_id = "Please select an artist";
         if (!form.title.trim()) newErrors.title = "Song title is required";
         if (!form.album_name.trim()) newErrors.album_name = "Album name is required";
+        if (!form.genre) newErrors.genre = "Please select a genre";
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -79,7 +81,6 @@ export default function CreateEditSong({
         if (!validate()) return;
 
         if (songId && artistId) {
-            // ✅ UPDATE — pass songId + only DTO fields (no artist_id in body)
             updateSong(
                 {
                     songId,
@@ -151,6 +152,7 @@ export default function CreateEditSong({
                                 ))}
                             </SelectContent>
                         </Select>
+                         {errors.artist_id &&<p className="text-xs text-red-400">{errors.artist_id}</p>}
                     </div>
                     <div className="space-y-1.5">
                         <Label className="text-xs text-zinc-400">Song Title</Label>
@@ -194,6 +196,7 @@ export default function CreateEditSong({
                                 ))}
                             </SelectContent>
                         </Select>
+                        {errors.genre && <p className="text-xs text-red-400">{errors.genre}</p>}
                     </div>
                 </div>
 
