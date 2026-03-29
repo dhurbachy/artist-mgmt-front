@@ -1,4 +1,4 @@
-import { useMutation,useQuery } from "@tanstack/react-query";
+import { useMutation,useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ApiError } from "@/services/artist-services";
 import { AuthService } from "@/services/artist-services/services/AuthService";
 import { OpenAPI } from "@/services/artist-services/core/OpenAPI";
@@ -12,6 +12,7 @@ interface LoginPayload {
 // -------------------- LOGIN --------------------
 export const useLogin = () => {
   const {login}=useAuth();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (payload: LoginPayload) =>
@@ -23,6 +24,7 @@ export const useLogin = () => {
       if (token) {
         // localStorage.setItem("access_token", token);
         login(token);
+      queryClient.invalidateQueries({ queryKey: ["me"] }); 
 
         OpenAPI.TOKEN = token;
       }
