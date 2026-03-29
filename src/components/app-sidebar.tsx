@@ -1,5 +1,5 @@
 import * as React from "react"
-
+import { useLocation } from "react-router"
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
 import {
@@ -22,6 +22,7 @@ const RoleConstant = {
 
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const location = useLocation();
   const { data: User } = useGetMe();
   const userRole = User?.role;
   console.log(userRole);
