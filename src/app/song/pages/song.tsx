@@ -161,7 +161,7 @@ export default function Song() {
         <div className="grid grid-cols-2 gap-2">
 
 
-          <div className="relative max-w-sm">
+          {/* <div className="relative max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
             <Input
               placeholder="Search songs or albums..."
@@ -170,7 +170,7 @@ export default function Song() {
               className="pl-9 bg-zinc-900 border-zinc-800 text-zinc-100 placeholder:text-zinc-600 h-9 text-sm focus:border-rose-500"
             />
 
-          </div>
+          </div> */}
           <div className="relative max-w-sm">
             {/* <Select onValueChange={(value) => { setSelectedArtist(value); console.log(value) }}>
               <SelectTrigger className="w-[180px] bg-zinc-900 border-zinc-800 text-zinc-100 h-9 text-sm focus:ring-rose-500">

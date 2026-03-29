@@ -160,7 +160,7 @@ export default function Artist() {
 
       <div className="max-w-7xl mx-auto px-6 py-6 space-y-5">
         {/* Search */}
-        <div className="relative max-w-sm">
+        {/* <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
           <Input
             placeholder="Search artists..."
@@ -168,7 +168,7 @@ export default function Artist() {
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             className="pl-9 bg-zinc-900 border-zinc-800 text-zinc-100 placeholder:text-zinc-600 h-9 text-sm focus:border-violet-500 focus:ring-violet-500/20"
           />
-        </div>
+        </div> */}
 
         {/* Table */}
         <div className="rounded-xl border border-zinc-800 overflow-hidden bg-zinc-900/40">

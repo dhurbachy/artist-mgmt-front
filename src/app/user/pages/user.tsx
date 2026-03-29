@@ -140,7 +140,7 @@ export default function User() {
         </div>
 
         {/* Search */}
-        <div className="relative max-w-sm">
+        {/* <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
           <Input
             placeholder="Search by name or email..."
@@ -148,7 +148,7 @@ export default function User() {
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             className="pl-9 bg-zinc-900 border-zinc-800 text-zinc-100 placeholder:text-zinc-600 h-9 text-sm focus:border-emerald-500"
           />
-        </div>
+        </div> */}
 
         {/* Table */}
         <div className="rounded-xl border border-zinc-800 overflow-hidden bg-zinc-900/40">
