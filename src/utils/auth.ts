@@ -14,18 +14,24 @@ export const useAxiosInterceptor = () => {
       (response) => response,
       async (error) => {
         const original = error.config;
-
+        if (
+          error.response?.status === 401 &&
+          original.url?.includes("/auth/refresh")
+        ) {
+          logout();
+          return Promise.reject(error);
+        }
         if (error.response?.status === 401 && !original._retry) {
           original._retry = true;
           try {
             const data = await AuthService.authControllerRefresh();
             const newToken = data.access_token;
+            OpenAPI.TOKEN = newToken;
 
             // ✅ UPDATE CONTEXT (This updates your React State)
-            login(newToken); 
-            
+            login(newToken);
+
             // Sync with OpenAPI
-            OpenAPI.TOKEN = newToken;
             original.headers["Authorization"] = `Bearer ${newToken}`;
             return axios(original);
           } catch (err) {
@@ -34,7 +40,7 @@ export const useAxiosInterceptor = () => {
           }
         }
         return Promise.reject(error);
-      }
+      },
     );
 
     return () => axios.interceptors.response.eject(interceptor);

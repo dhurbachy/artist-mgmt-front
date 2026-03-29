@@ -55,20 +55,14 @@ export const useRegister = () => {
 export const useLogout = () => {
     const {logout}=useAuth();
      const navigate = useNavigate();
+     const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: () => AuthService.authControllerLogout(),
-    onSuccess: () => {
-      // localStorage.removeItem("access_token");
+    onSettled: () => { 
+      queryClient.clear();
       OpenAPI.TOKEN = undefined;
       logout();
-      navigate(ROUTES.LOGIN);
-    },
-    onError: (err:ApiError) => {
-      // clear anyway even if API call fails
-      // localStorage.removeItem("access_token");
-      logout();
-      OpenAPI.TOKEN = undefined;
       navigate(ROUTES.LOGIN);
     },
   });
@@ -106,6 +100,8 @@ export const useGetMe = () => {
     queryKey: ["me"],
     queryFn: () => AuthService.authControllerGetMe(),
     staleTime: 5 * 60 * 1000,
-    enabled: !!accessToken, // only fetch if token exists
+    enabled: !!accessToken,
+    retry: false,
+    refetchOnWindowFocus: false,
   });
 };
