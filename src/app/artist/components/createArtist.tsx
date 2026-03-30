@@ -115,11 +115,7 @@ export default function CreateArtist({
           setForm(initialForm);
           setErrors({});
         },
-        onError: (err: any) => {
-          setErrors(
-            err.response?.data?.errors || { name: "Something went wrong" },
-          );
-        },
+       
       });
     }
   };

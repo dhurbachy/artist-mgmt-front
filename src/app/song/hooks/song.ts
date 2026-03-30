@@ -1,8 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { SongsService } from "@/services/artist-services";
+import { ApiError, SongsService } from "@/services/artist-services";
 import { CreateSongDto } from "@/services/artist-services/models/CreateSongDto";
 import { UpdateSongDto } from "@/services/artist-services/models/UpdateSongDto";
 import { toast } from "sonner";
+import { handleApiError } from "@/services/handleError";
 
 // GET /api/artists/:artistId/songs
 export const useGetAllSongs = (artistId: string, page: number = 1, limit: number = 10) => {
@@ -43,6 +44,7 @@ export const useCreateSong = () => {
             });
             toast.success("Song created successfully!");
         },
+        onError: (error: ApiError) => handleApiError(error, "Failed to create song"),
     });
 };
 
@@ -58,6 +60,7 @@ export const useUpdateSong = (artistId: string) => {
             queryClient.invalidateQueries({ queryKey: ["songs", artistId, variables.songId] });
             toast.success("Song updated successfully!");
         },
+        onError: (error: ApiError) => handleApiError(error, "Update Failed"),
     });
 };
 
@@ -71,5 +74,6 @@ export const useDeleteSong = (artistId: string) => {
             queryClient.invalidateQueries({ queryKey: ["songs", artistId] });
             toast.success("Song deleted successfully!");
         },
+        onError: (error: ApiError) => handleApiError(error, "Delete Failed"),
     });
 };

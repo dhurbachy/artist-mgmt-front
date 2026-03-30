@@ -94,9 +94,7 @@ export default function CreateEditSong({
                         setForm(initialForm);
                         setErrors({});
                     },
-                    onError: (err: any) => {
-                        setErrors(err.response?.data?.errors || { title: "Something went wrong" });
-                    },
+                   
                 }
             );
         } else {
@@ -114,9 +112,7 @@ export default function CreateEditSong({
                         setForm(initialForm);
                         setErrors({});
                     },
-                    onError: (err: any) => {
-                        setErrors(err.response?.data?.errors || { title: "Something went wrong" });
-                    },
+                   
                 }
             );
         }

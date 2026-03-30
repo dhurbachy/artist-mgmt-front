@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AuthService, UsersService } from "@/services/artist-services";
-import type { CreateUserDto, UpdateUserDto } from "@/services/artist-services";
+import type { ApiError, CreateUserDto, UpdateUserDto } from "@/services/artist-services";
+import { handleApiError } from "@/services/handleError";
 import { toast } from "sonner";
 export const useGetMe = () => {
   return useQuery({
@@ -39,6 +40,7 @@ export const useDeleteUser = () => {
       queryClient.invalidateQueries({ queryKey: ["allUser"] });
       toast.success("User deleted successfully!");
     },
+    onError: (error: ApiError) => handleApiError(error, "Delete Failed"),
   });
 };
 
@@ -53,6 +55,7 @@ export const useCreateUser = () => {
       queryClient.invalidateQueries({ queryKey: ["allUser"] });
       toast.success("User created successfully!");
     },
+    onError: (error: ApiError) => handleApiError(error, "Creation Failed"),
   });
 };
 
@@ -68,5 +71,6 @@ export const useUpdateUser = () => {
       toast.success("User updated successfully!");
       // queryClient.invalidateQueries({ queryKey: ['allUser', variables.id] });
     },
+    onError: (error: ApiError) => handleApiError(error, "Update Failed"),
   });
 };

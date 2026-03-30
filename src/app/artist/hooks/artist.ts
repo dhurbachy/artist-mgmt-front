@@ -3,6 +3,7 @@ import { ApiError, ArtistService } from "@/services/artist-services";
 import { CreateArtistDto } from "@/services/artist-services/models/CreateArtistDto";
 import { UpdateArtistDto } from "@/services/artist-services/models/UpdateArtistDto";
 import { toast } from "sonner";
+import { handleApiError } from "@/services/handleError";
 // GET /api/artist
 export const useGetArtists = (page: number = 1, limit: number = 10) => {
   return useQuery({
@@ -32,6 +33,7 @@ export const useCreateArtist = () => {
       queryClient.invalidateQueries({ queryKey: ["artists"] });
       toast.success("Artist created successfully!");
     },
+    onError: (error: ApiError) => handleApiError(error, "Create Failed"),
   });
 };
 
@@ -46,6 +48,7 @@ export const useUpdateArtist = () => {
       queryClient.invalidateQueries({ queryKey: ["artists", variables.id] });
       toast.success("Artist updated successfully!");
     },
+    onError: (error: ApiError) => handleApiError(error, "Update Failed"),
   });
 };
 
