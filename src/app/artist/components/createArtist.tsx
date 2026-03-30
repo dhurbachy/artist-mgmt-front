@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +22,7 @@ import {
   useGetArtist,
   useUpdateArtist,
 } from "../hooks/artist";
+import type { ApiError } from "@/services/artist-services";
 
 interface CreateArtistProps {
   open: boolean;
@@ -89,7 +91,10 @@ export default function CreateArtist({
   };
 
   const handleSave = () => {
-    if (!validate()) return;
+    if (!validate()) {
+      toast.error("Please fix the errors in the form");
+      return;
+    }
 
     if (artistId) {
       updateArtist(
@@ -100,11 +105,7 @@ export default function CreateArtist({
             setForm(initialForm);
             setErrors({});
           },
-          onError: (err: any) => {
-            setErrors(
-              err.response?.data?.errors || { name: "Something went wrong" },
-            );
-          },
+         
         },
       );
     } else {

@@ -5,6 +5,7 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/ui/dialog";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useGetArtist, useDeleteArtist } from "../hooks/artist";
 
@@ -21,9 +22,11 @@ export default function DeleteArtist({ deleteDialogOpen, setDeleteDialogOpen, ar
         deleteArtist(artistId, {
             onSuccess: () => {
                 setDeleteDialogOpen(false);
+                toast.success("Artist deleted successfully");
             },
             onError: (error) => {
                 console.error("Delete failed:", error);
+                
             }
         });
     };

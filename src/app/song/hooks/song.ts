@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { SongsService } from "@/services/artist-services";
 import { CreateSongDto } from "@/services/artist-services/models/CreateSongDto";
 import { UpdateSongDto } from "@/services/artist-services/models/UpdateSongDto";
+import { toast } from "sonner";
 
 // GET /api/artists/:artistId/songs
 export const useGetAllSongs = (artistId: string, page: number = 1, limit: number = 10) => {
@@ -40,6 +41,7 @@ export const useCreateSong = () => {
             queryClient.invalidateQueries({ 
                 queryKey: ["songs", variables.artist_id] 
             });
+            toast.success("Song created successfully!");
         },
     });
 };
@@ -54,6 +56,7 @@ export const useUpdateSong = (artistId: string) => {
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ["songs", artistId] });
             queryClient.invalidateQueries({ queryKey: ["songs", artistId, variables.songId] });
+            toast.success("Song updated successfully!");
         },
     });
 };
@@ -66,6 +69,7 @@ export const useDeleteSong = (artistId: string) => {
             SongsService.songsControllerRemove(artistId, songId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["songs", artistId] });
+            toast.success("Song deleted successfully!");
         },
     });
 };
