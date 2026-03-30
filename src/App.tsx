@@ -1,7 +1,9 @@
 
 import './App.css'
 import RouteMain from './routes/routeMain'
-import { BrowserRouter } from 'react-router'
+import { BrowserRouter } from 'react-router';
+import { Toaster } from 'sonner';
+
 import {
   // useQuery,
   // useMutation,
@@ -40,6 +42,7 @@ function App() {
         <AppContent /> 
         </AuthProvider>
       </QueryClientProvider>
+      <Toaster position="top-right" richColors />
     </>
   )
 }
