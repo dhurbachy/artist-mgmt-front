@@ -1,53 +1,71 @@
-
-import { useState } from "react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { useLogin } from "@/app/auth/hooks/auth" 
-import { Link, useNavigate } from "react-router"
-import {ROUTES} from "../routes/routeConstant";
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { useLogin } from "@/app/auth/hooks/auth";
+import { Link, useNavigate } from "react-router";
+import { ROUTES } from "../routes/routeConstant";
+import { ApiError } from "@/services/artist-services/core/ApiError";
+import { toast } from "sonner";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   // const router = useRouter()
-  const { mutate: login, isPending, isError, error } = useLogin()
-   const [errors, setErrors] = useState<Record<string, string>>({});
- const navigate=useNavigate();
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const { mutate: login, isPending, isError, error } = useLogin();
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-     if (!validate()) return;
+    if (!validate()) return;
     login(
       { email, password },
       {
         onSuccess: () => {
-          
           navigate(ROUTES.DASHBOARD);
-
         },
-      }
-    )
-  }
+        onError: (error: any) => {
+          let errorMessage = "An unexpected error occurred";
 
-   const validate = () => {
+          // Check if it's the specific ApiError from your generated services
+          if (error instanceof ApiError) {
+            // 2. Check for the specific 401 code
+            if (error.status === 401) {
+              // Priority: Backend Message -> HTTP Status Text -> Friendly Fallback
+              errorMessage = "Invalid email or password";
+            } else {
+              errorMessage =
+                error.body?.message || error.statusText || errorMessage;
+            }
+          }
+
+          toast.error("Login failed", {
+            description: errorMessage,
+          });
+        },
+      },
+    );
+  };
+
+  const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!email.trim()) {
       newErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       newErrors.email = "Please enter a valid email";
     }
-    
+
     if (!password) {
       newErrors.password = "Password is required";
     } else if (password.length < 6) {
@@ -72,10 +90,12 @@ export function LoginForm({
               </div>
 
               {/* Error banner */}
-              
-               {(isError || errors.server) && (
+
+              {(isError || errors.server) && (
                 <p className="rounded-md bg-red-500/10 px-3 py-2 text-xs text-red-400 text-center border border-red-500/20">
-                  {errors.server || (error as any)?.response?.data?.message || "Login failed."}
+                  {errors.server ||
+                    (error as any)?.response?.data?.message ||
+                    "Login failed."}
                 </p>
               )}
 
@@ -90,7 +110,11 @@ export function LoginForm({
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={isPending}
                 />
-                {errors.email && <p className="text-xs text-red-400 text-left">{errors.email}</p>}
+                {errors.email && (
+                  <p className="text-xs text-red-400 text-left">
+                    {errors.email}
+                  </p>
+                )}
               </Field>
 
               <Field>
@@ -111,7 +135,11 @@ export function LoginForm({
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isPending}
                 />
-                {errors.password && <p className="text-xs text-red-400 text-left">{errors.password}</p>}
+                {errors.password && (
+                  <p className="text-xs text-red-400 text-left">
+                    {errors.password}
+                  </p>
+                )}
               </Field>
 
               <Field>
@@ -136,5 +164,5 @@ export function LoginForm({
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
